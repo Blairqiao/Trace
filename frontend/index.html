@@ -1,13 +1,125 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>History Galaxy</title>
+    <style>
+      body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: monospace; }
+      #canvas-container { width: 100vw; height: 100vh; }
+      
+      /* The Parameter UI */
+      #control-panel {
+        position: absolute; top: 15px; right: 15px;
+        background: rgba(15, 15, 15, 0.85);
+        border: 1px solid #333; border-radius: 8px;
+        padding: 15px; width: 250px; z-index: 100;
+        backdrop-filter: blur(4px);
+      }
+      .control-group { margin-bottom: 12px; margin-right: 10px; }
+      label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; }
+      input { width: 100%; background: #5656567e; border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; }
+      /* Minimal range input styling (thin track, small circular thumb) */
+      input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; height: 20px; padding: 0; margin: 0; cursor: pointer; border: none; }
+
+      /* WebKit track/thumb */
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 6px; border-radius: 999px; background: #5656567e; border: none;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none; width: 12px; height: 12px; margin-top: -3px; border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95); box-shadow: none; transition: transform 0.12s ease;
+      }
+      input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.12); }
+
+      /* Firefox track/thumb */
+      input[type="range"]::-moz-range-track { height: 6px; border-radius: 999px; background: #5656567e; }
+      input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.95); }
+
+      /* IE/Edge */
+      input[type="range"]::-ms-track { height: 6px; background: transparent; border-color: transparent; color: transparent; }
+      input[type="range"]::-ms-thumb { width: 12px; height: 12px; background: rgba(255,255,255,0.95); border-radius: 50%; }
+
+      input[type="range"]:focus { outline: none; }
+      button { 
+        width: 100%; background: #5656567e; color: white; border: none; 
+        padding: 8px; margin-top: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;
+      }
+      button:hover { background: #3a3a3a7e; }
+      
+      /* The Tooltip */
+      #tooltip {
+        position: absolute; top: 0; left: 0; background: rgba(20, 20, 20, 0.9);
+        border: 1px solid #444; padding: 10px 15px; border-radius: 6px;
+        pointer-events: none; opacity: 0; transition: opacity 0.2s;
+        transform: translate(15px, 15px); max-width: 300px; z-index: 10;
+      }
+      #tooltip .cluster { font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
+      #tooltip .title { font-weight: bold; font-size: 1rem; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <div id="control-panel">
+      <div class="control-group">
+        <label>Node Count</label>
+        <input type="number" id="val-limit" value="1500" step="100">
+      </div>
+      <div class="control-group">
+        <label>Topic Broadness</label>
+        <input type="number" id="val-neighbors" value="15" step="1">
+      </div>
+      <div class="control-group">
+        <label>Repulsion Factor</label>
+        <input type="number" id="val-dist" value="0.1" step="0.05">
+      </div>
+      <div class="control-group">
+        <label>Random Seed</label>
+        <input type="number" id="val-seed" value="42" step="1">
+      </div>
+
+      <button id="btn-recalculate">Recalculate Galaxy</button>
+      <hr style="border-color: #333; margin: 15px 0;">
+      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Cluster Settings</div>
+
+
+      <div class="control-group">
+        <label>Cluster Radius</label>
+        <input type="range" id="val-eps" min="0.05" max="0.7" value="0.3" step="0.01">
+      </div>
+      <div class="control-group">
+        <label>Minimum Cluster Size</label>
+        <input type="range" id="val-samples" min="3" max="20" value="3" step="1">
+      </div>
+
+      <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;" />
+
+      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Live Aesthetics</div>
+      
+      <div class="control-group">
+        <label>Node Size</label>
+        <input type="range" id="val-size" min="5" max="35" value="10" step="0.5">
+      </div>
+      <div class="control-group">
+        <label>Core Glow Intensity</label>
+        <input type="range" id="val-intensity" min="0.5" max="5.0" value="2.0" step="0.1">
+      </div>
+      <div class="control-group">
+        <label>Global Opacity</label>
+        <input type="range" id="val-opacity" min="0.1" max="1.0" value="1.0" step="0.05">
+      </div>
+      <div class="control-group">
+        <label>Galaxy Spread (Scale)</label>
+        <input type="range" id="val-spread" min="0.5" max="15.0" value="2.0" step="0.01">
+      </div>
+    </div>
+
+    <div id="canvas-container"></div>
+    <div id="tooltip">
+      <div class="cluster" id="tt-cluster"></div>
+      <div class="title" id="tt-title"></div>
+      <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">Double-click to fly here</div>
+    </div>
+    
+    <script type="module" src="src/main.js"></script>
   </body>
 </html>
