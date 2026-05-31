@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { saveLocalData, loadLocalData } from './db.js';
+import demoNodes from './assets/demo_galaxy.json';
 
 // --- Scene Setup ---
 const container = document.getElementById('canvas-container');
@@ -15,12 +17,39 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 container.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.addEventListener('end', saveCameraState);
 controls.enableDamping = true;
 controls.dampingFactor = 0.05;
 controls.enablePan = true;
 controls.autoRotate = false;
-controls.autoRotateSpeed = 0.4;
+controls.autoRotateSpeed = 0.3;
 controls.minDistance = 0.3;
+
+
+function saveCameraState() {
+  const cameraState = {
+    posX: camera.position.x,
+    posY: camera.position.y,
+    posZ: camera.position.z,
+    tarX: controls.target.x,
+    tarY: controls.target.y,
+    tarZ: controls.target.z
+  };
+  localStorage.setItem('galaxyCameraState', JSON.stringify(cameraState));
+}
+
+function loadCameraState() {
+  const saved = localStorage.getItem('galaxyCameraState');
+  if (!saved) return; 
+
+  const state = JSON.parse(saved);
+  
+  camera.position.set(state.posX, state.posY, state.posZ);
+  
+  controls.target.set(state.tarX, state.tarY, state.tarZ);
+  
+  controls.update(); 
+}
 
 // --- Globals & State Mechanics ---
 let pointCloud = null;
@@ -38,6 +67,8 @@ const colors = [
 
 // Settings Panel
 document.getElementById('settings-toggle').addEventListener('click', () => {
+  document.getElementById('data-panel').classList.remove('open');
+  document.getElementById('data-toggle').classList.remove('open') ;
   document.getElementById('settings-panel').classList.toggle('open');
   document.getElementById('settings-toggle').classList.toggle('open');
 });
@@ -54,6 +85,64 @@ document.getElementById('btn-fullscreen').addEventListener('click', () => {
   }
 });
 
+function saveUISettings() {
+  const settings = {
+    max_items: document.getElementById('val-limit').value,
+    n_neighbors: document.getElementById('val-neighbors').value,
+    min_dist: document.getElementById('val-dist').value,
+    seed: document.getElementById('val-seed').value,
+    eps: document.getElementById('val-eps').value,
+    min_samples: document.getElementById('val-samples').value,
+    size: document.getElementById('val-size').value,
+    intensity: document.getElementById('val-intensity').value,
+    opacity: document.getElementById('val-opacity').value,
+    spread: document.getElementById('val-spread')?.value || 2.0,
+    autoRotate: document.getElementById('toggle-sleep-rotate').checked
+  };
+  
+  localStorage.setItem('galaxyVisualSettings', JSON.stringify(settings));
+}
+
+function loadUISettings() {
+  const saved = localStorage.getItem('galaxyVisualSettings');
+  if (!saved) return; 
+
+  const settings = JSON.parse(saved);
+  document.getElementById('val-limit').value = settings.max_items;
+  document.getElementById('val-neighbors').value = settings.n_neighbors;
+  document.getElementById('val-dist').value = settings.min_dist;
+  document.getElementById('val-seed').value = settings.seed;
+  document.getElementById('val-eps').value = settings.eps;
+  document.getElementById('val-samples').value = settings.min_samples;
+  document.getElementById('val-size').value = settings.size;
+  document.getElementById('val-intensity').value = settings.intensity;
+  document.getElementById('val-opacity').value = settings.opacity;
+  document.getElementById('val-spread').value = settings.spread;
+  document.getElementById('toggle-sleep-rotate').checked = settings.autoRotate;
+
+  shaderUniforms.uSize.value = parseFloat(settings.size);
+  shaderUniforms.uIntensity.value = 5 - parseFloat(settings.intensity);
+  shaderUniforms.uOpacity.value = parseFloat(settings.opacity);
+  spreadFactor = parseFloat(settings.spread);
+  allowAutoRotate = settings.autoRotate;
+
+  updateAllTooltips(); 
+}
+
+function updateAllTooltips() {
+  const event = new Event('input');
+  document.getElementById('val-limit').dispatchEvent(event);
+  document.getElementById('val-neighbors').dispatchEvent(event);
+  document.getElementById('val-dist').dispatchEvent(event);
+  document.getElementById('val-seed').dispatchEvent(event);
+  document.getElementById('val-eps').dispatchEvent(event);
+  document.getElementById('val-samples').dispatchEvent(event);
+  document.getElementById('val-size').dispatchEvent(event);
+  document.getElementById('val-intensity').dispatchEvent(event);
+  document.getElementById('val-opacity').dispatchEvent(event);
+  document.getElementById('val-spread').dispatchEvent(event);
+}
+
 // Slider Tooltip
 const sliderWrappers = document.querySelectorAll('.slider-wrapper');
 
@@ -62,32 +151,31 @@ sliderWrappers.forEach(wrapper => {
   const tooltip = wrapper.querySelector('.slider-tooltip');
 
   const updateTooltip = () => {
-    // 1. Get the current, min, and max values
     const min = parseFloat(slider.min) || 0;
     const max = parseFloat(slider.max) || 100;
     const val = parseFloat(slider.value);
 
-    // 2. Update the text inside the bubble
     tooltip.innerText = val;
 
-    // 3. Calculate the percentage (0.0 to 1.0)
     const percent = (val - min) / (max - min);
 
-    // 4. The Magic Math: Adjust for the physical width of the browser's slider thumb
-    // (Standard thumb width is about 16px). We offset the percentage so the bubble 
-    // doesn't overshoot the edges of the input box.
     const thumbWidth = 4; 
     const offset = (0.5 - percent) * thumbWidth;
 
-    // 5. Move the bubble!
     tooltip.style.left = `calc(${percent * 100}% + ${offset}px)`;
   };
 
-  // Run the math every time the user drags the slider
   slider.addEventListener('input', updateTooltip);
   
-  // Run it once on load so the bubble starts in the correct position
   updateTooltip();
+});
+
+// Data Panel
+document.getElementById('data-toggle').addEventListener('click', () => {
+  document.getElementById('settings-panel').classList.remove('open');
+  document.getElementById('settings-toggle').classList.remove('open') ;
+  document.getElementById('data-panel').classList.toggle('open');
+  document.getElementById('data-toggle').classList.toggle('open');
 });
 
 // Auto-Rotate Logic
@@ -97,34 +185,42 @@ document.getElementById('toggle-sleep-rotate').addEventListener('change', (e) =>
 });
 
 // --- Live Parameters ---
-let spreadFactor = parseFloat(document.getElementById('val-spread')?.value || 2.0);
+let spreadFactor = parseFloat(document.getElementById('val-spread').value);
 
 const shaderUniforms = {
   uSize: { value: parseFloat(document.getElementById('val-size').value) },
   uIntensity: { value: 5 - parseFloat(document.getElementById('val-intensity').value) },
   uOpacity: { value: parseFloat(document.getElementById('val-opacity').value) }
 };
+// Settings Listeners
+document.getElementById('val-limit').addEventListener('input', saveUISettings);
+document.getElementById('val-neighbors').addEventListener('input', saveUISettings);
+document.getElementById('val-dist').addEventListener('input', saveUISettings);
+document.getElementById('val-seed').addEventListener('input', saveUISettings);
 
-// Slider Listeners
 document.getElementById('val-size').addEventListener('input', (e) => {
   shaderUniforms.uSize.value = parseFloat(e.target.value);
   updateHitbox();
+  saveUISettings();
 });
 document.getElementById('val-intensity').addEventListener('input', (e) => {
   shaderUniforms.uIntensity.value = 5 - parseFloat(e.target.value);
+  saveUISettings();
 });
 document.getElementById('val-opacity').addEventListener('input', (e) => {
   shaderUniforms.uOpacity.value = parseFloat(e.target.value);
+  saveUISettings();
 });
 
-// New Spread Listener
-document.getElementById('val-spread')?.addEventListener('input', (e) => {
+document.getElementById('val-spread').addEventListener('input', (e) => {
   spreadFactor = parseFloat(e.target.value);
   if (pointCloud) {
     pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
     updateHitbox();
   }
+  saveUISettings();
 });
+
 
 let isFlying = false;
 let currentFlightSpeed = 0.05;
@@ -140,10 +236,10 @@ const resetIdleTimer = () => {
   if (controls.autoRotate) controls.autoRotate = false;
 };
 
-window.addEventListener('mousemove', resetIdleTimer);
-window.addEventListener('mousedown', resetIdleTimer);
-window.addEventListener('wheel', resetIdleTimer);
-window.addEventListener('keydown', resetIdleTimer);
+renderer.domElement.addEventListener('mousemove', resetIdleTimer);
+renderer.domElement.addEventListener('mousedown', resetIdleTimer);
+renderer.domElement.addEventListener('wheel', resetIdleTimer);
+renderer.domElement.addEventListener('keydown', resetIdleTimer);
 
 const getClusterColorHex = (clusterId) => {
   if (clusterId === -1) return 0x888888;
@@ -182,94 +278,275 @@ const fragmentShader = `
 `;
 
 // --- Data Pipeline ---
-async function loadData() {
-  const limit = document.getElementById('val-limit').value;
-  const n_neighbors = document.getElementById('val-neighbors').value;
-  const min_dist = document.getElementById('val-dist').value;
-  const seed = document.getElementById('val-seed').value;
-  const eps = document.getElementById('val-eps').value;
-  const min_samples = document.getElementById('val-samples').value;
+let currentSessionId = null;
+let isDemoMode = false;
 
-  const btn = document.getElementById('btn-recalculate');
-  btn.innerText = "Crunching Math...";
-  btn.disabled = true;
-  btn.style.opacity = "0.5"; 
-  btn.style.cursor = "not-allowed";
+// Build Demo Galaxy
+function buildDemoGalaxy() {
+  isDemoMode = true;
   
-  try {
-    const url = `http://localhost:8000/api/history-galaxy?limit=${limit}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&seed=${seed}&eps=${eps}&min_samples=${min_samples}`;
-    const response = await fetch(url);
-    const json = await response.json();
-    
-    if (!pointCloud || pointCloud.geometry.attributes.position.count !== json.nodes.length){
-      
-      if (pointCloud) {
-        scene.remove(pointCloud);
-        pointCloud.geometry.dispose();
-        pointCloud.material.dispose();
-      }
+  // Add dummy text back in just to satisfy the renderer's requirements
+  demoNodes.forEach((node, i) => {
+    node.id = i;
+    node.title = "Encrypted Node"; 
+    node.url = "";
+  });
 
-      nodeData = json.nodes;
+  buildThreeJsScene(demoNodes);
 
-      const positions = [];
-      const colorArray = [];
-      const colorObj = new THREE.Color();
+  controls.enableZoom = false;
+  controls.enablePan = false;
+  controls.enableRotate = false;
+  controls.autoRotate = true;
 
-      nodeData.forEach((dataPoint) => {
-        // Store the RAW 1.0 scale coordinates in the geometry
-        positions.push(dataPoint.x, dataPoint.y, dataPoint.z);
-        colorObj.setHex(getClusterColorHex(dataPoint.cluster));
-        colorArray.push(colorObj.r, colorObj.g, colorObj.b);
-      });
+  pointCloud.geometry.computeBoundingSphere();
+  const sphere = pointCloud.geometry.boundingSphere;
 
-      const geometry = new THREE.BufferGeometry();
-      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      geometry.setAttribute('customColor', new THREE.Float32BufferAttribute(colorArray, 3));
+  // 2. Find the exact mathematical center, adjusted for your spread slider
+  const centerX = sphere.center.x * spreadFactor;
+  const centerY = sphere.center.y * spreadFactor;
+  const centerZ = sphere.center.z * spreadFactor;
 
-      const material = new THREE.ShaderMaterial({
-        uniforms: shaderUniforms,
-        vertexShader: vertexShader,
-        fragmentShader: fragmentShader,
-        transparent: true,
-        depthWrite: false, 
-        blending: THREE.AdditiveBlending 
-      });
+  // 3. Tell OrbitControls to look exactly at that center point
+  controls.target.set(centerX, centerY, centerZ);
 
-      pointCloud = new THREE.Points(geometry, material);
-      pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
-      scene.add(pointCloud);
+  // 4. Move the camera right up to the edge of the galaxy (radius * 1.5 gives a nice padding)
+  const zoomDistance = sphere.radius * spreadFactor * 1;
+  
+  // Position the camera directly in front of the center
+  camera.position.set(centerX, centerY, centerZ + zoomDistance);
 
-    } else {
-      nodeData = json.nodes;
+  controls.update();
+}
 
-      const colorsAttr = pointCloud.geometry.attributes.customColor;
-      const colorObj = new THREE.Color();
-
-      nodeData.forEach((dataPoint, i) => {
-        colorObj.setHex(getClusterColorHex(dataPoint.cluster));
-        colorsAttr.setXYZ(i, colorObj.r, colorObj.g, colorObj.b);
-      });
-
-      colorsAttr.needsUpdate = true;
-    }
-    
-
-    
-    
-    btn.innerText = "Recalculate Galaxy";
-    resetIdleTimer();
-  } catch (error) {
-    console.error("Error:", error);
-    btn.innerText = "Error (See Console)";
-  } finally {
-    btn.disabled = false;
-    btn.style.opacity = "1";
-    btn.style.cursor = "pointer";
+async function initGalaxy() {
+  const savedGalaxy = await loadLocalData('userGalaxy');
+  const savedSessionId = await loadLocalData('userSessionId');
+  const savedFileName = localStorage.getItem('galaxyFileName');
+  
+  if (savedGalaxy) {
+    currentSessionId = savedSessionId;
+    document.getElementById('upload-prompt').style.display = 'none';
+    updateDataPanelUI(savedFileName);
+    buildThreeJsScene(savedGalaxy);
+  } else {;
+    document.getElementById('upload-prompt').style.display = 'block';
+    buildDemoGalaxy();
   }
 }
 
-document.getElementById('btn-recalculate').addEventListener('click', loadData);
-loadData();
+  // Load New Data
+  async function processFileUpload(file) {
+  if (!file) return;
+  
+  const btn = document.getElementById('btn-recalculate');
+  btn.disabled = true;
+  const emptyStateLabel = document.querySelector('label[for="file-upload"]');
+  const emptyStateInput = document.getElementById('file-upload');
+  
+  const sidePanelLabel = document.querySelector('label[for="data-panel-upload"]');
+  const sidePanelInput = document.getElementById('data-panel-upload');
+  
+  emptyStateLabel.textContent = "Extracting Embeddings...";
+  emptyStateLabel.classList.add('disabled');
+  emptyStateInput.disabled = true;
+  
+  sidePanelLabel.textContent = "Extracting Embeddings...";
+  sidePanelLabel.classList.add('disabled');
+  sidePanelInput.disabled = true;
+
+  try {
+    const fileText = await file.text();
+    const customData = JSON.parse(fileText);
+
+    const response = await fetch('http://localhost:8000/api/upload-history', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(customData)
+    });
+
+    if (!response.ok) throw new Error("Server rejected the upload.");
+
+    const json = await response.json();
+    
+    await saveLocalData('userGalaxy', json.nodes);
+    await saveLocalData('userSessionId', json.session_id);
+    
+    localStorage.setItem('galaxyFileName', file.name);
+    
+    currentSessionId = json.session_id;
+    
+    updateDataPanelUI(file.name);
+    document.getElementById('upload-prompt').style.display = 'none';
+    sidePanelLabel.textContent = "Upload New History!";
+
+    isDemoMode = false;
+    controls.enableZoom = true;
+    controls.enablePan = true;
+    controls.enableRotate = true;
+    controls.autoRotate = allowAutoRotate;
+    
+    if (pointCloud) {
+      scene.remove(pointCloud);
+      pointCloud.geometry.dispose();
+      pointCloud.material.dispose();
+      pointCloud = null;
+    }
+    
+    buildThreeJsScene(json.nodes);
+
+  } catch (error) {
+    console.error(error);
+    emptyStateLabel.textContent = "Upload Failed";
+    sidePanelLabel.textContent = "Upload Failed";
+    alert("Upload failed.");
+  } finally {
+    btn.disabled = false;
+    
+    emptyStateLabel.classList.remove('disabled');
+    emptyStateInput.disabled = false;
+    
+    sidePanelLabel.classList.remove('disabled');
+    sidePanelInput.disabled = false;
+    
+    emptyStateInput.value = '';
+    sidePanelInput.value = '';
+  }
+}
+document.getElementById('file-upload').addEventListener('change', (e) => {
+  processFileUpload(e.target.files[0]);
+});
+
+document.getElementById('data-panel-upload').addEventListener('change', (e) => {
+  processFileUpload(e.target.files[0]);
+});
+
+// Data Status
+function updateDataPanelUI(fileName) {
+  const statusText = document.getElementById('current-file-name');
+  const statusDot = document.querySelector('.status-dot');
+  
+  if (fileName) {
+    statusText.innerText = `Active: ${fileName}`;
+    statusDot.classList.add('active');
+  } else {
+    statusText.innerText = "No data loaded";
+    statusDot.classList.remove('active');
+  }
+}
+
+// Clear Data
+document.getElementById('btn-clear-data').addEventListener('click', () => {
+  const confirmWipe = confirm("This will permanently delete your saved 3D map and reset the app. Continue?");
+  if (confirmWipe) {
+    localStorage.clear();
+    indexedDB.deleteDatabase('GalaxyDB');
+    window.location.reload(); 
+  }
+});
+
+// Recalculate Galaxy with new parameters
+async function recalculateGalaxy() {
+  if (!currentSessionId) {
+    alert("Please upload a file first!");
+    return;
+  }
+
+  const btn = document.getElementById('btn-recalculate');
+  btn.innerText = "Recalculating...";
+  btn.disabled = true;
+
+  try {
+    const max_items = document.getElementById('val-limit').value;
+    const n_neighbors = document.getElementById('val-neighbors').value;
+    const min_dist = document.getElementById('val-dist').value;
+    const seed = document.getElementById('val-seed').value;
+    const eps = document.getElementById('val-eps').value;
+    const min_samples = document.getElementById('val-samples').value;
+
+    const url = `http://localhost:8000/api/recalculate?session_id=${currentSessionId}&max_items=${max_items}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&seed=${seed}&eps=${eps}&min_samples=${min_samples}`;
+    
+    const response = await fetch(url, { method: 'POST' });
+    
+    if (response.status === 404) {
+       alert("Server memory cleared. Please re-upload your file.");
+       return;
+    }
+
+    const json = await response.json();
+    
+    await saveLocalData('userGalaxy', json.nodes);
+    
+    buildThreeJsScene(json.nodes);
+
+  } catch (error) {
+    console.error(error);
+    btn.innerText = "Error";
+  } finally {
+    btn.innerText = "Recalculate Galaxy";
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('btn-recalculate').addEventListener('click', recalculateGalaxy);
+
+function buildThreeJsScene(nodes) {
+  if (pointCloud && pointCloud.geometry.attributes.position.count === nodes.length) {
+    
+    nodeData = nodes;
+
+    const colorsAttr = pointCloud.geometry.attributes.customColor;
+    const colorObj = new THREE.Color();
+
+    nodeData.forEach((dataPoint, i) => {
+      colorObj.setHex(getClusterColorHex(dataPoint.cluster));
+      colorsAttr.setXYZ(i, colorObj.r, colorObj.g, colorObj.b);
+    });
+
+    colorsAttr.needsUpdate = true;
+    resetIdleTimer();
+    
+    return; 
+  }
+
+  if (pointCloud) {
+    scene.remove(pointCloud);
+    pointCloud.geometry.dispose();
+    pointCloud.material.dispose();
+  }
+
+  nodeData = nodes;
+
+  const positions = [];
+  const colorArray = [];
+  const colorObj = new THREE.Color();
+
+  nodeData.forEach((dataPoint) => {
+
+    positions.push(dataPoint.x, dataPoint.y, dataPoint.z);
+    colorObj.setHex(getClusterColorHex(dataPoint.cluster));
+    colorArray.push(colorObj.r, colorObj.g, colorObj.b);
+  });
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('customColor', new THREE.Float32BufferAttribute(colorArray, 3));
+
+  const material = new THREE.ShaderMaterial({
+    uniforms: shaderUniforms,
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+    transparent: true,
+    depthWrite: false, 
+    blending: THREE.AdditiveBlending 
+  });
+
+  pointCloud = new THREE.Points(geometry, material);
+  pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
+  scene.add(pointCloud);
+
+  resetIdleTimer();
+}
 
 
 
@@ -282,16 +559,18 @@ function debounce(func, wait) {
 }
 
 async function liveUpdateColors() {
-  if (!pointCloud) return;
+  if (!pointCloud || !currentSessionId) return;
 
+  const max_items = document.getElementById('val-limit').value;
   const eps = document.getElementById('val-eps').value;
   const min_samples = document.getElementById('val-samples').value;
 
   try {
-    const url = `http://localhost:8000/api/cluster?eps=${eps}&min_samples=${min_samples}`;
+    const url = `http://localhost:8000/api/recluster?session_id=${currentSessionId}&max_items=${max_items}&eps=${eps}&min_samples=${min_samples}`;
+
     const response = await fetch(url);
     const json = await response.json();
-    console.log(json);
+
     const colorsAttr = pointCloud.geometry.attributes.customColor;
     const colorObj = new THREE.Color();
 
@@ -311,8 +590,14 @@ async function liveUpdateColors() {
 
 const debouncedLiveUpdate = debounce(liveUpdateColors, 50);
 
-document.getElementById('val-eps').addEventListener('input', debouncedLiveUpdate);
-document.getElementById('val-samples').addEventListener('input', debouncedLiveUpdate);
+document.getElementById('val-eps').addEventListener('input', (e) => {
+  debouncedLiveUpdate();
+  saveUISettings();
+});
+document.getElementById('val-samples').addEventListener('input', (e) => {
+  debouncedLiveUpdate();
+  saveUISettings();
+});
 
 // --- Raycasting & Navigation Actions ---
 const raycaster = new THREE.Raycaster();
@@ -365,6 +650,7 @@ renderer.domElement.addEventListener('mousemove', (event) => {
 });
 
 renderer.domElement.addEventListener('dblclick', () => {
+  if (isDemoMode) return;
   resetIdleTimer();
   if (hoveredId !== null) {
     const targetData = nodeData[hoveredId];
@@ -427,11 +713,16 @@ function animate() {
       controls.enabled = true; 
     }
   } else {
-    if (Date.now() - lastInputTime > IDLE_TIMEOUT && allowAutoRotate) {
+    if (isDemoMode) {
       controls.autoRotate = true;
     } else {
-      controls.autoRotate = false;
+      if (Date.now() - lastInputTime > IDLE_TIMEOUT && allowAutoRotate) {
+        controls.autoRotate = true;
+      } else {
+        controls.autoRotate = false;
+      }
     }
+    
   }
 
   controls.update();
@@ -478,7 +769,7 @@ function animate() {
       pointCloud.geometry.computeBoundingSphere();
     }
 
-    if (isAnimating) {
+    if (isAnimating || isDemoMode) {
       if (hoveredId !== null) {
         hoveredId = null;
         if (tooltip) tooltip.style.opacity = 0;
@@ -527,4 +818,11 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+
+loadCameraState();
+loadUISettings();
+initGalaxy();
+
 animate();
+
+
