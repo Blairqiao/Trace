@@ -36,12 +36,72 @@ const colors = [
   0xaa5566, 0x43aa8b, 0x8338ec, 0x4a5759, 0xf94144
 ];
 
+// Settings Panel
+document.getElementById('settings-toggle').addEventListener('click', () => {
+  document.getElementById('settings-panel').classList.toggle('open');
+  document.getElementById('settings-toggle').classList.toggle('open');
+});
+
+document.getElementById('btn-fullscreen').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch((err) => {
+      console.error(`Error attempting to enable fullscreen: ${err.message}`);
+    });
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+});
+
+// Slider Tooltip
+const sliderWrappers = document.querySelectorAll('.slider-wrapper');
+
+sliderWrappers.forEach(wrapper => {
+  const slider = wrapper.querySelector('input[type="range"]');
+  const tooltip = wrapper.querySelector('.slider-tooltip');
+
+  const updateTooltip = () => {
+    // 1. Get the current, min, and max values
+    const min = parseFloat(slider.min) || 0;
+    const max = parseFloat(slider.max) || 100;
+    const val = parseFloat(slider.value);
+
+    // 2. Update the text inside the bubble
+    tooltip.innerText = val;
+
+    // 3. Calculate the percentage (0.0 to 1.0)
+    const percent = (val - min) / (max - min);
+
+    // 4. The Magic Math: Adjust for the physical width of the browser's slider thumb
+    // (Standard thumb width is about 16px). We offset the percentage so the bubble 
+    // doesn't overshoot the edges of the input box.
+    const thumbWidth = 4; 
+    const offset = (0.5 - percent) * thumbWidth;
+
+    // 5. Move the bubble!
+    tooltip.style.left = `calc(${percent * 100}% + ${offset}px)`;
+  };
+
+  // Run the math every time the user drags the slider
+  slider.addEventListener('input', updateTooltip);
+  
+  // Run it once on load so the bubble starts in the correct position
+  updateTooltip();
+});
+
+// Auto-Rotate Logic
+let allowAutoRotate = true;
+document.getElementById('toggle-sleep-rotate').addEventListener('change', (e) => {
+  allowAutoRotate = e.target.checked;
+});
+
 // --- Live Parameters ---
 let spreadFactor = parseFloat(document.getElementById('val-spread')?.value || 2.0);
 
 const shaderUniforms = {
   uSize: { value: parseFloat(document.getElementById('val-size').value) },
-  uIntensity: { value: parseFloat(document.getElementById('val-intensity').value) },
+  uIntensity: { value: 5 - parseFloat(document.getElementById('val-intensity').value) },
   uOpacity: { value: parseFloat(document.getElementById('val-opacity').value) }
 };
 
@@ -51,7 +111,7 @@ document.getElementById('val-size').addEventListener('input', (e) => {
   updateHitbox();
 });
 document.getElementById('val-intensity').addEventListener('input', (e) => {
-  shaderUniforms.uIntensity.value = parseFloat(e.target.value);
+  shaderUniforms.uIntensity.value = 5 - parseFloat(e.target.value);
 });
 document.getElementById('val-opacity').addEventListener('input', (e) => {
   shaderUniforms.uOpacity.value = parseFloat(e.target.value);
@@ -61,12 +121,8 @@ document.getElementById('val-opacity').addEventListener('input', (e) => {
 document.getElementById('val-spread')?.addEventListener('input', (e) => {
   spreadFactor = parseFloat(e.target.value);
   if (pointCloud) {
-    // Instantly scale the entire galaxy on the GPU
     pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
-    
-    if (hoveredId !== null) {
-      const ud = nodeData[hoveredId];
-    }
+    updateHitbox();
   }
 });
 
@@ -145,38 +201,60 @@ async function loadData() {
     const response = await fetch(url);
     const json = await response.json();
     
-    if (pointCloud) scene.remove(pointCloud);
-    nodeData = json.nodes;
+    if (!pointCloud || pointCloud.geometry.attributes.position.count !== json.nodes.length){
+      
+      if (pointCloud) {
+        scene.remove(pointCloud);
+        pointCloud.geometry.dispose();
+        pointCloud.material.dispose();
+      }
 
-    const positions = [];
-    const colorArray = [];
-    const colorObj = new THREE.Color();
+      nodeData = json.nodes;
 
-    nodeData.forEach((dataPoint) => {
-      // Store the RAW 1.0 scale coordinates in the geometry
-      positions.push(dataPoint.x, dataPoint.y, dataPoint.z);
-      colorObj.setHex(getClusterColorHex(dataPoint.cluster));
-      colorArray.push(colorObj.r, colorObj.g, colorObj.b);
-    });
+      const positions = [];
+      const colorArray = [];
+      const colorObj = new THREE.Color();
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geometry.setAttribute('customColor', new THREE.Float32BufferAttribute(colorArray, 3));
+      nodeData.forEach((dataPoint) => {
+        // Store the RAW 1.0 scale coordinates in the geometry
+        positions.push(dataPoint.x, dataPoint.y, dataPoint.z);
+        colorObj.setHex(getClusterColorHex(dataPoint.cluster));
+        colorArray.push(colorObj.r, colorObj.g, colorObj.b);
+      });
 
-    const material = new THREE.ShaderMaterial({
-      uniforms: shaderUniforms,
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
-      transparent: true,
-      depthWrite: false, 
-      blending: THREE.AdditiveBlending 
-    });
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('customColor', new THREE.Float32BufferAttribute(colorArray, 3));
 
-    pointCloud = new THREE.Points(geometry, material);
+      const material = new THREE.ShaderMaterial({
+        uniforms: shaderUniforms,
+        vertexShader: vertexShader,
+        fragmentShader: fragmentShader,
+        transparent: true,
+        depthWrite: false, 
+        blending: THREE.AdditiveBlending 
+      });
+
+      pointCloud = new THREE.Points(geometry, material);
+      pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
+      scene.add(pointCloud);
+
+    } else {
+      nodeData = json.nodes;
+
+      const colorsAttr = pointCloud.geometry.attributes.customColor;
+      const colorObj = new THREE.Color();
+
+      nodeData.forEach((dataPoint, i) => {
+        colorObj.setHex(getClusterColorHex(dataPoint.cluster));
+        colorsAttr.setXYZ(i, colorObj.r, colorObj.g, colorObj.b);
+      });
+
+      colorsAttr.needsUpdate = true;
+    }
     
-    // Apply the user's spread factor to the entire object instantly
-    pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
-    scene.add(pointCloud);
+
+    
     
     btn.innerText = "Recalculate Galaxy";
     resetIdleTimer();
@@ -193,6 +271,8 @@ async function loadData() {
 document.getElementById('btn-recalculate').addEventListener('click', loadData);
 loadData();
 
+
+
 function debounce(func, wait) {
   let timeout;
   return function(...args) {
@@ -204,19 +284,15 @@ function debounce(func, wait) {
 async function liveUpdateColors() {
   if (!pointCloud) return;
 
-  const limit = document.getElementById('val-limit').value;
-  const n_neighbors = document.getElementById('val-neighbors').value;
-  const min_dist = document.getElementById('val-dist').value;
   const eps = document.getElementById('val-eps').value;
   const min_samples = document.getElementById('val-samples').value;
 
   try {
-    const url = `http://localhost:8000/api/history-galaxy?limit=${limit}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&eps=${eps}&min_samples=${min_samples}`;
+    const url = `http://localhost:8000/api/cluster?eps=${eps}&min_samples=${min_samples}`;
     const response = await fetch(url);
     const json = await response.json();
-    
+    console.log(json);
     const colorsAttr = pointCloud.geometry.attributes.customColor;
-    const sizesAttr = pointCloud.geometry.attributes.sizeMultiplier;
     const colorObj = new THREE.Color();
 
     json.nodes.forEach((dataPoint, i) => {
@@ -281,14 +357,14 @@ const mouse = new THREE.Vector2();
 const tooltip = document.getElementById('tooltip');
 let hoveredId = null;
 
-window.addEventListener('mousemove', (event) => {
+renderer.domElement.addEventListener('mousemove', (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   tooltip.style.left = event.clientX + 'px';
   tooltip.style.top = event.clientY + 'px';
 });
 
-window.addEventListener('dblclick', () => {
+renderer.domElement.addEventListener('dblclick', () => {
   resetIdleTimer();
   if (hoveredId !== null) {
     const targetData = nodeData[hoveredId];
@@ -322,13 +398,13 @@ window.addEventListener('dblclick', () => {
   }
 });
 
-window.addEventListener('auxclick', (event) => {
+renderer.domElement.addEventListener('auxclick', (event) => {
   if (event.button === 1 && hoveredId !== null && nodeData[hoveredId].url) {
     window.open(nodeData[hoveredId].url, '_blank');
   }
 });
 
-window.addEventListener('mousedown', (event) => {
+renderer.domElement.addEventListener('mousedown', (event) => {
   if (event.button === 0 && (event.ctrlKey || event.metaKey) && hoveredId !== null ) {
     window.open(nodeData[hoveredId].url, '_blank');
   }
@@ -351,7 +427,7 @@ function animate() {
       controls.enabled = true; 
     }
   } else {
-    if (Date.now() - lastInputTime > IDLE_TIMEOUT) {
+    if (Date.now() - lastInputTime > IDLE_TIMEOUT && allowAutoRotate) {
       controls.autoRotate = true;
     } else {
       controls.autoRotate = false;
@@ -361,32 +437,83 @@ function animate() {
   controls.update();
 
   if (pointCloud) {
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObject(pointCloud);
+    
+    const positions = pointCloud.geometry.attributes.position.array;
+    let geometryNeedsUpdate = false;
+    let isAnimating = false;
 
-    if (intersects.length > 0) {
-      const targetIndex = intersects[0].index;
-      if (hoveredId !== targetIndex) {
-        hoveredId = targetIndex;
-        const ud = nodeData[targetIndex];
-        
-        document.getElementById('tt-cluster').innerText = ud.cluster === -1 ? 'Isolated Search' : `Cluster ${ud.cluster}`;
-        document.getElementById('tt-title').innerText = ud.title;
-        tooltip.style.opacity = 1;
-        document.body.style.cursor = 'pointer';
+    for (let i = 0; i < nodeData.length; i++) {
+      const idx = i * 3;
+      
+      const targetX = nodeData[i].x;
+      const targetY = nodeData[i].y;
+      const targetZ = nodeData[i].z;
 
-        forcefieldSprite.position.set(ud.x * spreadFactor, ud.y * spreadFactor, ud.z * spreadFactor);
-        forcefieldSprite.visible = true;
+      const curX = positions[idx];
+      const curY = positions[idx + 1];
+      const curZ = positions[idx + 2];
+
+      const diffX = targetX - curX;
+      const diffY = targetY - curY;
+      const diffZ = targetZ - curZ;
+
+      if (Math.abs(diffX) > 0.0001 || Math.abs(diffY) > 0.0001 || Math.abs(diffZ) > 0.0001) {
+        positions[idx] += diffX * 0.05;
+        positions[idx + 1] += diffY * 0.05;
+        positions[idx + 2] += diffZ * 0.05;
+        geometryNeedsUpdate = true;
+        isAnimating = true;
+      } else {
+        if (curX !== targetX || curY !== targetY || curZ !== targetZ) {
+          positions[idx] = targetX;
+          positions[idx + 1] = targetY;
+          positions[idx + 2] = targetZ;
+          geometryNeedsUpdate = true;
+        }
       }
-      const baseScale = shaderUniforms.uSize.value * 0.005;
-      forcefieldSprite.scale.set(baseScale, baseScale, 1);
+    }
 
-    } else {
+    if (geometryNeedsUpdate) {
+      pointCloud.geometry.attributes.position.needsUpdate = true;
+      pointCloud.geometry.computeBoundingSphere();
+    }
+
+    if (isAnimating) {
       if (hoveredId !== null) {
         hoveredId = null;
-        tooltip.style.opacity = 0;
+        if (tooltip) tooltip.style.opacity = 0;
         document.body.style.cursor = 'default';
         forcefieldSprite.visible = false;
+      }
+    } else {
+      raycaster.setFromCamera(mouse, camera);
+      const intersects = raycaster.intersectObject(pointCloud);
+      
+      if (intersects.length > 0) {
+        const targetIndex = intersects[0].index;
+        if (hoveredId !== targetIndex) {
+          hoveredId = targetIndex;
+          const ud = nodeData[targetIndex];
+          
+          document.getElementById('tt-cluster').innerText = ud.cluster === -1 ? 'Isolated Search' : `Cluster ${ud.cluster}`;
+          document.getElementById('tt-title').innerText = ud.title;
+          tooltip.style.opacity = 1;
+          document.body.style.cursor = 'pointer';
+
+          forcefieldSprite.position.set(ud.x, ud.y, ud.z);
+          forcefieldSprite.position.multiplyScalar(spreadFactor);
+          forcefieldSprite.visible = true;
+        }
+        const baseScale = shaderUniforms.uSize.value * 0.005;
+        forcefieldSprite.scale.set(baseScale, baseScale, 1);
+
+      } else {
+        if (hoveredId !== null) {
+          hoveredId = null;
+          tooltip.style.opacity = 0;
+          document.body.style.cursor = 'default';
+          forcefieldSprite.visible = false;
+        }
       }
     }
   }

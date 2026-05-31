@@ -10,13 +10,30 @@ from app.pipelinecache import PipelineCache
 
 global_cache = PipelineCache()
 
+def run_cluster_pipeline(eps=0.3, min_samples=3):
+    df = global_cache.raw_data
+    coords_3d = global_cache.coords_3d
+    cluster_labels = find_clusters(coords_3d, eps=eps, min_samples=min_samples)
+
+    output_nodes = []
+    for i, (original_idx, row) in enumerate(df.iterrows()):
+        node = {
+            "id": i,
+            "cluster": int(cluster_labels[i])
+        }
+        output_nodes.append(node)
+        
+    print(f"Successfully processed {len(output_nodes)} nodes.")
+    return output_nodes
+
 def run_full_pipeline(file_path: str, max_items: int = 2000, n_neighbors=15, min_dist=0.1, seed=42, eps=0.3, min_samples=3):
     
     umap_needs_recalc = (
         max_items != global_cache.max_items or
         n_neighbors != global_cache.last_umap_params["n_neighbors"] or
         min_dist != global_cache.last_umap_params["min_dist"] or
-        seed != global_cache.last_umap_params["seed"]
+        seed != global_cache.last_umap_params["seed"] or
+        seed == -1
     )
 
     if max_items != global_cache.max_items:

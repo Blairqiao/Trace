@@ -8,17 +8,77 @@
       body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: monospace; }
       #canvas-container { width: 100vw; height: 100vh; }
       
-      /* The Parameter UI */
-      #control-panel {
-        position: absolute; top: 15px; right: 15px;
-        background: rgba(15, 15, 15, 0.85);
-        border: 1px solid #333; border-radius: 8px;
-        padding: 15px; width: 250px; z-index: 100;
-        backdrop-filter: blur(4px);
+      /* The Settings Panel */
+      #settings-toggle {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        cursor: pointer;
+        opacity: 0.2;
+        transition: opacity 0.2s ease, transform 0.2s ease;        
+        z-index: 1000;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        will-change: transform;
       }
+
+      #settings-toggle.open {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        cursor: pointer;
+        opacity: 1;
+        transition: opacity 0.2s ease, transform 0.2s ease;       
+        z-index: 1000;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        transform: translateZ(0);
+        will-change: transform;
+      }
+
+      #settings-toggle:hover {
+        opacity: 1;
+        transform: scale(1.1);
+      }
+
+      #settings-toggle:active {
+        opacity: 1;
+        transform: scale(0.95);
+      }
+
+      #settings-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 320px;
+        height: 100vh;
+        background: rgba(10, 10, 15, 0.17);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        transform: translateX(-100%); 
+        transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        z-index: 999;
+        padding: 60px 20px 20px 20px;
+        color: white;
+        overflow-y: auto;
+      }
+
+      #settings-panel.open {
+        transform: translateX(0); /* Slide in */
+      }
+
+      /* The Parameter UI */
       .control-group { margin-bottom: 12px; margin-right: 10px; }
       label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; }
       input { width: 100%; background: #5656567e; border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; }
+      
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type="number"] { outline: none; }
+
       /* Minimal range input styling (thin track, small circular thumb) */
       input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; height: 20px; padding: 0; margin: 0; cursor: pointer; border: none; }
 
@@ -46,6 +106,87 @@
         padding: 8px; margin-top: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;
       }
       button:hover { background: #3a3a3a7e; }
+
+      .checkbox-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        vertical-align: middle;
+      }
+      input[type="checkbox"] {
+        appearance: none;         
+        -webkit-appearance: none; 
+        width: 18px;
+        height: 18px;
+        background-color: rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.2s ease;
+        margin-top: -2px;
+      }
+      input[type="checkbox"]:hover {
+        border-color: rgba(255, 255, 255, 0.4);
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+      input[type="checkbox"]:checked {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.6);
+      }
+      input[type="checkbox"]:checked::after {
+        content: "";
+        position: absolute;
+        left: 5px;             
+        top: 1px;
+        width: 4px;
+        height: 9px;
+        border: solid white;  
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .slider-wrapper {
+        position: relative;
+        width: 100%;
+        margin-top: 8px; /* Gives the bubble room to float above the slider */
+      }
+
+      .slider-tooltip {
+        position: absolute;
+        top: -30px; /* Hovers above the slider */
+        left: 50%;
+        transform: translateX(-50%); /* Keeps the center of the bubble aligned to the thumb */
+        background: rgba(255, 255, 255, 0.9);
+        color: #050505; /* Dark text for contrast */
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        pointer-events: none; /* Prevents the tooltip from blocking mouse clicks */
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+      }
+
+      /* The tiny triangle pointer at the bottom of the bubble */
+      .slider-tooltip::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 4px 4px 0;
+        border-style: solid;
+        border-color: rgba(255, 255, 255, 0.9) transparent transparent transparent;
+      }
+
+      /* Show the bubble when hovering OR actively clicking/dragging */
+      .slider-wrapper:hover .slider-tooltip,
+      .slider-wrapper input[type="range"]:active + .slider-tooltip {
+        opacity: 1;
+      }
       
       /* The Tooltip */
       #tooltip {
@@ -57,61 +198,120 @@
       #tooltip .cluster { font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
       #tooltip .title { font-weight: bold; font-size: 1rem; }
     </style>
+
+
+
+
   </head>
   <body>
-    <div id="control-panel">
-      <div class="control-group">
-        <label>Node Count</label>
-        <input type="number" id="val-limit" value="1500" step="100">
-      </div>
-      <div class="control-group">
-        <label>Topic Broadness</label>
-        <input type="number" id="val-neighbors" value="15" step="1">
-      </div>
-      <div class="control-group">
-        <label>Repulsion Factor</label>
-        <input type="number" id="val-dist" value="0.1" step="0.05">
-      </div>
-      <div class="control-group">
-        <label>Random Seed</label>
-        <input type="number" id="val-seed" value="42" step="1">
-      </div>
+    <div id="settings-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="4" y1="21" x2="4" y2="14"></line>
+        <line x1="4" y1="10" x2="4" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="12"></line>
+        <line x1="12" y1="8" x2="12" y2="3"></line>
+        <line x1="20" y1="21" x2="20" y2="16"></line>
+        <line x1="20" y1="12" x2="20" y2="3"></line>
+        <line x1="1" y1="14" x2="7" y2="14"></line>
+        <line x1="9" y1="8" x2="15" y2="8"></line>
+        <line x1="17" y1="16" x2="23" y2="16"></line>
+      </svg>
+    </div>
 
-      <button id="btn-recalculate">Recalculate Galaxy</button>
-      <hr style="border-color: #333; margin: 15px 0;">
-      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Cluster Settings</div>
+    <div id="settings-panel">
+      <div class="settings-content">
+        <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Galaxy Controls</div>
+
+        <div>
+          <div class="control-group">
+            <label>Node Count</label>
+            <input type="number" id="val-limit" value="1500" step="100">
+          </div>
+          <div class="control-group">
+            <label>Topic Broadness</label>
+            <input type="number" id="val-neighbors" value="15" step="1">
+          </div>
+          <div class="control-group">
+            <label>Repulsion Factor</label>
+            <input type="number" id="val-dist" value="0.1" step="0.05">
+          </div>
+          <div class="control-group">
+            <label>Random Seed</label>
+            <input type="number" id="val-seed" value="42" step="1">
+          </div>
+
+          <button id="btn-recalculate">Recalculate Galaxy</button>
+          <hr style="border-color: #333; margin: 15px 0;">
+          <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Cluster Settings</div>
 
 
-      <div class="control-group">
-        <label>Cluster Radius</label>
-        <input type="range" id="val-eps" min="0.05" max="0.7" value="0.3" step="0.01">
-      </div>
-      <div class="control-group">
-        <label>Minimum Cluster Size</label>
-        <input type="range" id="val-samples" min="3" max="20" value="3" step="1">
-      </div>
+          <div class="control-group">
+            <label>Cluster Radius</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-eps" min="0.05" max="0.7" value="0.3" step="0.01">
+              <span class="slider-tooltip">0.3</span>
+            </div>
+            
+          </div>
+          <div class="control-group">
+            <label>Minimum Cluster Size</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-samples" min="3" max="20" value="3" step="1">
+              <span class="slider-tooltip">3</span>
+            </div>
+          </div>
 
-      <hr style="border: 0; border-top: 1px solid #333; margin: 15px 0;" />
+          <hr style="border-color: #333; margin: 15px 0;">
+          <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Live Aesthetics</div>
+          
+          <div class="control-group">
+            <label>Node Size</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-size" min="5" max="35" value="10" step="0.5">
+              <span class="slider-tooltip">10</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Core Glow Intensity</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-intensity" min="0" max="4.5" value="1.5" step="0.1">
+              <span class="slider-tooltip">1.5</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Global Opacity</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-opacity" min="0.1" max="1.0" value="1.0" step="0.05">
+              <span class="slider-tooltip">1.0</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Galaxy Spread (Scale)</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-spread" min="0.5" max="15.0" value="2.0" step="0.01">
+              <span class="slider-tooltip">2.0</span>
+            </div>
+          </div>
+        </div>
 
-      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Live Aesthetics</div>
-      
-      <div class="control-group">
-        <label>Node Size</label>
-        <input type="range" id="val-size" min="5" max="35" value="10" step="0.5">
-      </div>
-      <div class="control-group">
-        <label>Core Glow Intensity</label>
-        <input type="range" id="val-intensity" min="0.5" max="5.0" value="2.0" step="0.1">
-      </div>
-      <div class="control-group">
-        <label>Global Opacity</label>
-        <input type="range" id="val-opacity" min="0.1" max="1.0" value="1.0" step="0.05">
-      </div>
-      <div class="control-group">
-        <label>Galaxy Spread (Scale)</label>
-        <input type="range" id="val-spread" min="0.5" max="15.0" value="2.0" step="0.01">
+        <hr style="border-color: #333; margin: 15px 0;">
+        <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Other Settings</div>
+
+        
+        <div class="control-group checkbox-group">
+          <label for="toggle-sleep-rotate">Enable Sleep Mode Rotation</label>
+          <input type="checkbox" id="toggle-sleep-rotate" checked>
+        </div>
+
+        <button id="btn-fullscreen">Toggle Fullscreen</button>
+        
+        <!-- <div class="control-group">
+          <label>Upload Custom History</label>
+          <input type="file" id="file-upload" accept=".json">
+        </div> -->
       </div>
     </div>
+    
 
     <div id="canvas-container"></div>
     <div id="tooltip">
