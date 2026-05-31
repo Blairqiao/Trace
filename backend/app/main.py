@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
-import os
 import asyncio
 import uuid
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Header, Query, Request
 from fastapi.concurrency import asynccontextmanager, run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from typing import Optional
 from app.pipeline import run_dbscan, run_umap_dbscan
 from app.history_nlp import generate_embeddings, load_and_clean_chrome_history
 
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
     
     cleanup_task.cancel()
 
-app = FastAPI(title="History Vector Space API", lifespan=lifespan)
+app = FastAPI(title="Trace API", lifespan=lifespan)
 
 # Configure CORS so your Vite development server (usually localhost:5173) can talk to your backend
 app.add_middleware(
@@ -48,6 +48,18 @@ app.add_middleware(
 pipeline_lock = asyncio.Lock()
 
 SESSION_CACHE = {} 
+
+@app.get("/api/verify-session")
+async def verify_session(authorization: Optional[str] = Header(None)):
+    if not authorization:
+        raise HTTPException(status_code=401, detail="MISSING_TOKEN")
+    
+    session_id = authorization.replace("Bearer ", "")
+    
+    if session_id not in SESSION_CACHE: 
+        raise HTTPException(status_code=404, detail="SESSION_EXPIRED")
+        
+    return {"status": "valid"}
 
 @app.post("/api/upload-history")
 async def upload_history(request: Request):
@@ -84,7 +96,7 @@ async def recalculate_galaxy(
 ):
     
     if session_id not in SESSION_CACHE:
-        raise HTTPException(status_code=404, detail="Session expired. Please upload file again.")
+        raise HTTPException(status_code=404, detail="SESSION_EXPIRED")
         
     cached_data = SESSION_CACHE[session_id]
     
@@ -123,7 +135,7 @@ async def recluster(
     min_samples: int = Query(3, description="DBSCAN minimum samples")
 ):
     if session_id not in SESSION_CACHE:
-        raise HTTPException(status_code=404, detail="Session expired. Please upload file again.")
+        raise HTTPException(status_code=404, detail="SESSION_EXPIRED")
 
     cached_data = SESSION_CACHE[session_id]
 

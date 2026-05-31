@@ -160,9 +160,17 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   transform: translateX(-100%); 
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 999;
-  padding: 60px 20px 20px 20px;
+  padding: 60px 20px 40px 20px;
   color: white;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, transparent 50px, black 60px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0px, transparent 50px, black 60px, black 100%);
+}
+
+.settings-panel::-webkit-scrollbar {
+  display: none;
 }
 
 #settings-panel.open {
@@ -212,7 +220,7 @@ button {
 button:hover { background: #73737381; }
 
 button:disabled {
-  background: #5656564d; color: #aaa;
+  background: #5656564d; color: #aaa; cursor: pointer;
 }
 
 .checkbox-group {
@@ -331,7 +339,14 @@ input[type="checkbox"]:checked::after {
 .prompt-content h2 {
   margin: 0 0 10px 0;
   font-size: 24px;
-  background: linear-gradient(90deg, #555 0%, #fff 50%, #555 100%);
+  background: linear-gradient(
+    90deg, 
+    #666666 0%,     /* Slate Gray */
+    #a3a3a3 25%,    /* Light Silver */
+    #ffffff 50%,    /* Pure White Hotspot */
+    #a3a3a3 75%, 
+    #666666 100%
+  );
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -358,8 +373,8 @@ input[type="checkbox"]:checked::after {
   justify-content: center;
   gap: 8px;
   font-size: 12px;
-  color: #00f5d4; /* Using one of your neon colors! */
-  background: rgba(0, 245, 212, 0.1);
+  color: #aaa; 
+  background: rgba(255, 255, 255, 0.1);
   padding: 8px 16px;
   border-radius: 20px;
   margin: 0 auto 30px auto;

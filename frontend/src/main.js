@@ -53,6 +53,8 @@ function loadCameraState() {
 
 // --- Globals & State Mechanics ---
 let pointCloud = null;
+let currentSessionId = null;
+let isDemoMode = false;
 let nodeData = []; 
 const colors = [
   0xff0a54, 0x00f5d4, 0xffca3a, 0x3377aa, 0x9b5de5,
@@ -64,6 +66,23 @@ const colors = [
   0x887744, 0x06d6a0, 0x775566, 0xf3722c, 0x3d5a80,
   0xaa5566, 0x43aa8b, 0x8338ec, 0x4a5759, 0xf94144
 ];
+
+let isFlying = false;
+let currentFlightSpeed = 0.05;
+let defaultFlightSpeed = 0.05;
+const targetCameraPos = new THREE.Vector3();
+const targetControlsPos = new THREE.Vector3();
+let isTransitioningCamera = false;
+const centertargetCameraPos = new THREE.Vector3();
+const centertargetControlsPos = new THREE.Vector3();
+
+let lastInputTime = Date.now();
+const IDLE_TIMEOUT = 5000;
+
+const resetIdleTimer = () => {
+  lastInputTime = Date.now();
+  if (controls.autoRotate) controls.autoRotate = false;
+};
 
 // Settings Panel
 document.getElementById('settings-toggle').addEventListener('click', () => {
@@ -222,20 +241,6 @@ document.getElementById('val-spread').addEventListener('input', (e) => {
 });
 
 
-let isFlying = false;
-let currentFlightSpeed = 0.05;
-let defaultFlightSpeed = 0.05;
-const targetCameraPos = new THREE.Vector3();
-const targetControlsPos = new THREE.Vector3();
-
-let lastInputTime = Date.now();
-const IDLE_TIMEOUT = 5000;
-
-const resetIdleTimer = () => {
-  lastInputTime = Date.now();
-  if (controls.autoRotate) controls.autoRotate = false;
-};
-
 renderer.domElement.addEventListener('mousemove', resetIdleTimer);
 renderer.domElement.addEventListener('mousedown', resetIdleTimer);
 renderer.domElement.addEventListener('wheel', resetIdleTimer);
@@ -278,8 +283,6 @@ const fragmentShader = `
 `;
 
 // --- Data Pipeline ---
-let currentSessionId = null;
-let isDemoMode = false;
 
 // Build Demo Galaxy
 function buildDemoGalaxy() {
@@ -298,25 +301,9 @@ function buildDemoGalaxy() {
   controls.enablePan = false;
   controls.enableRotate = false;
   controls.autoRotate = true;
-
-  pointCloud.geometry.computeBoundingSphere();
-  const sphere = pointCloud.geometry.boundingSphere;
-
-  // 2. Find the exact mathematical center, adjusted for your spread slider
-  const centerX = sphere.center.x * spreadFactor;
-  const centerY = sphere.center.y * spreadFactor;
-  const centerZ = sphere.center.z * spreadFactor;
-
-  // 3. Tell OrbitControls to look exactly at that center point
-  controls.target.set(centerX, centerY, centerZ);
-
-  // 4. Move the camera right up to the edge of the galaxy (radius * 1.5 gives a nice padding)
-  const zoomDistance = sphere.radius * spreadFactor * 1;
   
-  // Position the camera directly in front of the center
-  camera.position.set(centerX, centerY, centerZ + zoomDistance);
+  centerCamera(0.75);
 
-  controls.update();
 }
 
 async function initGalaxy() {
@@ -335,8 +322,9 @@ async function initGalaxy() {
   }
 }
 
-  // Load New Data
-  async function processFileUpload(file) {
+
+// Load New Data
+async function processFileUpload(file) {
   if (!file) return;
   
   const btn = document.getElementById('btn-recalculate');
@@ -436,12 +424,16 @@ function updateDataPanelUI(fileName) {
 }
 
 // Clear Data
+function clearData() {
+  localStorage.clear();
+  indexedDB.deleteDatabase('GalaxyDB');
+  window.location.reload(); 
+}
+
 document.getElementById('btn-clear-data').addEventListener('click', () => {
   const confirmWipe = confirm("This will permanently delete your saved 3D map and reset the app. Continue?");
   if (confirmWipe) {
-    localStorage.clear();
-    indexedDB.deleteDatabase('GalaxyDB');
-    window.location.reload(); 
+    clearData();
   }
 });
 
@@ -472,7 +464,7 @@ async function recalculateGalaxy() {
        alert("Server memory cleared. Please re-upload your file.");
        return;
     }
-
+    
     const json = await response.json();
     
     await saveLocalData('userGalaxy', json.nodes);
@@ -504,6 +496,7 @@ function buildThreeJsScene(nodes) {
     });
 
     colorsAttr.needsUpdate = true;
+    centerCamera(1.5);
     resetIdleTimer();
     
     return; 
@@ -545,9 +538,28 @@ function buildThreeJsScene(nodes) {
   pointCloud.scale.set(spreadFactor, spreadFactor, spreadFactor);
   scene.add(pointCloud);
 
+  centerCamera(1.5);
+  
+
   resetIdleTimer();
 }
 
+function centerCamera(zoomLevel) {
+  if (!pointCloud) return;
+  pointCloud.geometry.computeBoundingSphere();
+  const sphere = pointCloud.geometry.boundingSphere;
+
+  const centerX = sphere.center.x * spreadFactor;
+  const centerY = sphere.center.y * spreadFactor;
+  const centerZ = sphere.center.z * spreadFactor;
+
+  const zoomDistance = sphere.radius * spreadFactor * zoomLevel;
+
+  centertargetControlsPos.set(centerX, centerY, centerZ);
+  centertargetCameraPos.set(centerX, centerY, centerZ + zoomDistance);
+  
+  isTransitioningCamera = true;
+}
 
 
 function debounce(func, wait) {
@@ -630,8 +642,8 @@ const forcefieldMat = new THREE.SpriteMaterial({
   color: 0xffffff,
   transparent: true,
   opacity: 0.4,                      // Overall brightness multiplier
-  blending: THREE.AdditiveBlending,  // Math: RGB + RGB = Brighter Core
-  depthWrite: false                  // Stops it from clipping into neighboring nodes
+  blending: THREE.AdditiveBlending, 
+  depthWrite: false
 });
 
 const forcefieldSprite = new THREE.Sprite(forcefieldMat);
@@ -725,6 +737,15 @@ function animate() {
     
   }
 
+  if (isTransitioningCamera) {
+    camera.position.lerp(centertargetCameraPos, 0.05);
+    controls.target.lerp(centertargetControlsPos, 0.05);
+
+    if (camera.position.distanceTo(centertargetCameraPos) < 0.5) {
+      isTransitioningCamera = false;
+    }
+  }
+
   controls.update();
 
   if (pointCloud) {
@@ -816,6 +837,40 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// Check Session Health
+async function checkSessionHealth() {
+  const sessionKey = await loadLocalData('userSessionId');
+  
+  if (!sessionKey) return; 
+
+  try {
+    const response = await fetch('http://localhost:8000/api/verify-session', {
+      headers: {
+        'Authorization': `Bearer ${sessionKey}`
+      }
+    });
+
+    if (response.status === 404) {
+      const errorData = await response.json();
+      if (errorData.detail === "SESSION_EXPIRED") {
+        console.warn("Proactive check failed. Wiping state.");
+        clearData();
+      }
+    }
+  } catch (error) {
+    console.log("Could not reach server to verify session.");
+  }
+}
+
+window.addEventListener('DOMContentLoaded', checkSessionHealth);
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    console.log("Tab is active again, checking session health...");
+    checkSessionHealth();
+  }
 });
 
 
