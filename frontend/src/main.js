@@ -347,7 +347,7 @@ async function processFileUpload(file) {
     const fileText = await file.text();
     const customData = JSON.parse(fileText);
 
-    const response = await fetch('http://localhost:8000/api/upload-history', {
+    const response = await fetch('https://api.trace-app.net/api/upload-history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(customData)
@@ -456,7 +456,7 @@ async function recalculateGalaxy() {
     const eps = document.getElementById('val-eps').value;
     const min_samples = document.getElementById('val-samples').value;
 
-    const url = `http://localhost:8000/api/recalculate?session_id=${currentSessionId}&max_items=${max_items}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&seed=${seed}&eps=${eps}&min_samples=${min_samples}`;
+    const url = `https://api.trace-app.net/api/recalculate?session_id=${currentSessionId}&max_items=${max_items}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&seed=${seed}&eps=${eps}&min_samples=${min_samples}`;
     
     const response = await fetch(url, { method: 'POST' });
     
@@ -578,7 +578,7 @@ async function liveUpdateColors() {
   const min_samples = document.getElementById('val-samples').value;
 
   try {
-    const url = `http://localhost:8000/api/recluster?session_id=${currentSessionId}&max_items=${max_items}&eps=${eps}&min_samples=${min_samples}`;
+    const url = `https://api.trace-app.net/api/recluster?session_id=${currentSessionId}&max_items=${max_items}&eps=${eps}&min_samples=${min_samples}`;
 
     const response = await fetch(url);
     const json = await response.json();
@@ -846,7 +846,7 @@ async function checkSessionHealth() {
   if (!sessionKey) return; 
 
   try {
-    const response = await fetch('http://localhost:8000/api/verify-session', {
+    const response = await fetch('https://api.trace-app.net/api/verify-session', {
       headers: {
         'Authorization': `Bearer ${sessionKey}`
       }
