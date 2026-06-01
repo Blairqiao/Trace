@@ -20,7 +20,7 @@ def run_dbscan(df, coords_3d, max_items=1500, eps=0.3, min_samples=3):
         
     return output_nodes
 
-def run_umap_dbscan(df, embeddings, max_items=1500, n_neighbors=15, min_dist=0.1, seed=42, eps=0.3, min_samples=3):
+def run_umap_dbscan(df, embeddings, max_items=1500, n_neighbors=15, min_dist=0.1, seed=-1, eps=0.3, min_samples=3):
     coords_3d = reduce_to_3d(embeddings[:max_items], n_neighbors=n_neighbors, min_dist=min_dist, seed=seed)
     cluster_labels = find_clusters(coords_3d, eps=eps, min_samples=min_samples)
 

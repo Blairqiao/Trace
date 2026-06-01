@@ -17,7 +17,7 @@ async def clean_expired_sessions():
             expired_keys = []
             
             for session_id, data in SESSION_CACHE.items():
-                if now - data["timestamp"] > timedelta(hours=24):
+                if now - data["timestamp"] > timedelta(hours=1):
                     expired_keys.append(session_id)
                     
             for key in expired_keys:
@@ -79,7 +79,7 @@ async def upload_history(request: Request):
         "timestamp": datetime.now()
     }
     
-    nodes, coords_3d = run_umap_dbscan(df, embeddings, 1500, 15, 0.1, 42, 0.3, 3)
+    nodes, coords_3d = run_umap_dbscan(df, embeddings, 1500, 15, 0.1, -1, 0.3, 3)
     
     SESSION_CACHE[session_id]["coords_3d"] = coords_3d
 
@@ -92,7 +92,7 @@ async def recalculate_galaxy(
     max_items: int = Query(1500, description="Max history items"),
     n_neighbors: int = Query(15, description="UMAP neighbors"),
     min_dist: float = Query(0.1, description="UMAP minimum distance"),
-    seed: int = Query(42, description="UMAP random seed"),
+    seed: int = Query(-1, description="UMAP random seed"),
     eps: float = Query(0.3, description="DBSCAN epsilon radius"),
     min_samples: int = Query(3, description="DBSCAN minimum samples")
 ):

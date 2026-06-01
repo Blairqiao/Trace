@@ -23,6 +23,14 @@
       </svg>
     </div>
 
+    <div id="about-toggle" title="Additional Information">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 16v-4"></path>
+        <path d="M12 8h.01"></path>
+      </svg>
+    </div>
+
     <div id="settings-panel">
       <div class="settings-content">
         <hr style="border-color: #333; margin: 15px 0; margin-top: -4px;">
@@ -34,18 +42,23 @@
             <input type="number" id="val-limit" value="1500" step="100">
           </div>
           <div class="control-group">
+            <label>Random Seed</label>
+            <input type="number" id="val-seed" value="-1" step="1">
+          </div>
+          <div class="control-group">
             <label>Topic Broadness</label>
-            <input type="number" id="val-neighbors" value="15" step="1">
+            <div class ="slider-wrapper">
+              <input type="range" id="val-neighbors" min="2" max="100" value="15" step="1">
+              <span class="slider-tooltip">15</span>
+            </div>
           </div>
           <div class="control-group">
             <label>Repulsion Factor</label>
-            <input type="number" id="val-dist" value="0.1" step="0.05">
+            <div class ="slider-wrapper">
+              <input type="range" id="val-dist" min="0.01" max="0.99" value="0.3" step="0.01">
+              <span class="slider-tooltip">0.3</span>
+            </div>
           </div>
-          <div class="control-group">
-            <label>Random Seed</label>
-            <input type="number" id="val-seed" value="42" step="1">
-          </div>
-
           <button id="btn-recalculate">Recalculate Galaxy</button>
           <hr style="border-color: #333; margin: 15px 0;">
           <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Cluster Settings</div>
@@ -57,7 +70,6 @@
               <input type="range" id="val-eps" min="0.05" max="0.7" value="0.3" step="0.01">
               <span class="slider-tooltip">0.3</span>
             </div>
-            
           </div>
           <div class="control-group">
             <label>Minimum Cluster Size</label>
@@ -68,7 +80,7 @@
           </div>
 
           <hr style="border-color: #333; margin: 15px 0;">
-          <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Live Aesthetics</div>
+          <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Visual Aesthetics</div>
           
           <div class="control-group">
             <label>Node Size</label>
@@ -78,21 +90,21 @@
             </div>
           </div>
           <div class="control-group">
-            <label>Core Glow Intensity</label>
+            <label>Glow Intensity</label>
             <div class ="slider-wrapper">
               <input type="range" id="val-intensity" min="0" max="4.5" value="1.5" step="0.1">
               <span class="slider-tooltip">1.5</span>
             </div>
           </div>
           <div class="control-group">
-            <label>Global Opacity</label>
+            <label>Global Brightness</label>
             <div class ="slider-wrapper">
-              <input type="range" id="val-opacity" min="0.1" max="1.0" value="1.0" step="0.05">
+              <input type="range" id="val-opacity" min="0.1" max="2.0" value="1.0" step="0.05">
               <span class="slider-tooltip">1.0</span>
             </div>
           </div>
           <div class="control-group">
-            <label>Galaxy Spread (Scale)</label>
+            <label>Galaxy Scale</label>
             <div class ="slider-wrapper">
               <input type="range" id="val-spread" min="0.5" max="15.0" value="2.0" step="0.01">
               <span class="slider-tooltip">2.0</span>
@@ -105,7 +117,7 @@
 
         
         <div class="control-group checkbox-group">
-          <label for="toggle-sleep-rotate">Enable Sleep Mode Rotation</label>
+          <label for="toggle-sleep-rotate">Sleep Mode Rotation</label>
           <input type="checkbox" id="toggle-sleep-rotate" checked>
         </div>
 
@@ -119,6 +131,10 @@
         <line x1="8" y1="13" x2="16" y2="13"></line>
         <line x1="8" y1="17" x2="12" y2="17"></line>
       </svg>
+    </div>
+
+    <div id="quickstart-toggle">
+      <img height="28" width="28" src="src/assets/Trace.svg" alt="Trace quick start" />
     </div>
 
     <div id="data-panel" class="glass-panel side-panel">
@@ -138,6 +154,48 @@
       <button id="btn-clear-data" class="danger-btn">Clear Memory</button>
     </div>
 
+    <div id="about-modal" class="glass-modal hidden">
+      <div class="glass-modal-header">
+        <div>
+          <div class="modal-kicker">Additional Information</div>
+        </div>
+      </div>
+      <div id="about-modal-content" class="modal-body markdown-body"></div>
+    </div>
+
+    <div id="quickstart-modal" class="glass-modal hidden">
+      <div class="glass-modal-header">
+        <div>
+          <div class="modal-kicker" style="margin-bottom: 14px;">Quick Start</div>
+          <h2>Navigating Trace</h2>
+        </div>
+      </div>
+      
+      <div class="modal-body">
+        <p class="modal-copy">Your browsing history has been successfully mapped into a 3D semantic galaxy. Here is how to move around:</p>
+        
+        <div class="controls-grid" style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 10px;"> <strong>Left-Click + Drag:</strong> Rotate the camera</li>
+            <li style="margin-bottom: 10px;"> <strong>Right-Click + Drag:</strong> Move the camera</li>
+            <li style="margin-bottom: 10px;"> <strong>Scroll Wheel:</strong> Zoom in and out</li>
+            <li style="margin-bottom: 10px;"> <strong>Double-Click Node:</strong> Fly to a specific node</li>
+            <li> <strong>Cmd/Ctrl + Click:</strong> Open the link in a new tab</li>
+          </ul>
+        </div>
+
+        <h3 style="font-size: 1rem; color: #fff; margin-bottom: 10px;">The Command Center</h3>
+        <ul class="quickstart-list" style="padding-left: 20px; color: #e0e0e0; line-height: 1.6;">
+          <li><strong> Settings:</strong> Tune the galaxy's shape and aesthetics.</li>
+          <li><strong> Data:</strong> Manage your active session or upload a new file.</li>
+          <li><strong> Info:</strong> Learn more about the parameters and read how this was made.</li>
+        </ul>
+
+        <p class="modal-copy modal-footer-copy" style="font-size: 0.85rem; color: #888; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+          <em>You can reopen this guide at any time by clicking the Trace logo in the top-right corner.</em>
+        </p>
+      </div>
+    </div>
 
     <div id="upload-prompt" class="centered-prompt">
       <div class="prompt-content">
@@ -163,7 +221,7 @@
       <div class="title" id="tt-title"></div>
       <div style="font-size: 0.7rem; color: #666; margin-top: 5px;">Double-click to fly here</div>
     </div>
-    
+
     <script type="module" src="src/main.js"></script>
   </body>
 </html>

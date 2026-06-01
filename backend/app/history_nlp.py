@@ -32,4 +32,5 @@ def generate_embeddings(df: pd.DataFrame) -> list:
     
     print("Generating 384-dimensional embeddings...")
     embeddings = model.encode(titles, show_progress_bar=True)
+    embeddings = embeddings.astype('float32')
     return embeddings.tolist()

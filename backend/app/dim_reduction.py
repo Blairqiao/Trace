@@ -1,7 +1,7 @@
 import umap
 from sklearn.preprocessing import StandardScaler
 
-def reduce_to_3d(embeddings, n_neighbors=15, min_dist=0.1, seed=42):
+def reduce_to_3d(embeddings, n_neighbors=15, min_dist=0.1, seed=-1):
     """
     Takes a high-dimensional vector matrix and compresses it to 3 dimensions (X, Y, Z).
     """

@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { saveLocalData, loadLocalData } from './db.js';
 import demoNodes from './assets/demo_galaxy.json';
+import { marked } from 'marked';
+import aboutMarkdown from './assets/ABOUT.md?raw';
 
 // --- Scene Setup ---
 const container = document.getElementById('canvas-container');
@@ -78,18 +80,118 @@ const centertargetControlsPos = new THREE.Vector3();
 
 let lastInputTime = Date.now();
 const IDLE_TIMEOUT = 5000;
+const QUICKSTART_FLAG_KEY = 'hasSeenQuickStart';
 
 const resetIdleTimer = () => {
   lastInputTime = Date.now();
   if (controls.autoRotate) controls.autoRotate = false;
 };
 
+function setModalVisibility(modalId, isVisible) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+  modal.classList.toggle('hidden', !isVisible);
+}
+
+function setToggleActive(toggleId, isActive) {
+  const toggle = document.getElementById(toggleId);
+  if (!toggle) return;
+  toggle.classList.toggle('open', isActive);
+}
+
+function closeAllOverlays() {
+  document.getElementById('settings-panel').classList.remove('open');
+  document.getElementById('settings-toggle').classList.remove('open');
+  document.getElementById('data-panel').classList.remove('open');
+  document.getElementById('data-toggle').classList.remove('open');
+  setModalVisibility('about-modal', false);
+  setModalVisibility('quickstart-modal', false);
+  setToggleActive('about-toggle', false);
+  setToggleActive('quickstart-toggle', false);
+}
+
+function renderMarkdown(target, markdown) {
+  if (!target) return;
+  target.innerHTML = marked.parse(markdown);
+}
+
+function openAboutModal() {
+  closeAllOverlays();
+  setModalVisibility('about-modal', true);
+  setToggleActive('about-toggle', true);
+}
+
+function openQuickStartModal() {
+  closeAllOverlays();
+  setModalVisibility('quickstart-modal', true);
+  setToggleActive('quickstart-toggle', true);
+}
+
+async function markQuickStartSeen() {
+  await saveLocalData(QUICKSTART_FLAG_KEY, true);
+}
+
+async function maybeShowQuickStartModal() {
+  const hasSeenQuickStart = await loadLocalData(QUICKSTART_FLAG_KEY);
+  if (hasSeenQuickStart) return;
+
+  requestAnimationFrame(() => {
+    openQuickStartModal();
+  });
+
+  await markQuickStartSeen();
+}
+
 // Settings Panel
 document.getElementById('settings-toggle').addEventListener('click', () => {
   document.getElementById('data-panel').classList.remove('open');
   document.getElementById('data-toggle').classList.remove('open') ;
+  setModalVisibility('about-modal', false);
+  setModalVisibility('quickstart-modal', false);
   document.getElementById('settings-panel').classList.toggle('open');
   document.getElementById('settings-toggle').classList.toggle('open');
+});
+
+document.getElementById('about-toggle').addEventListener('click', () => {
+  const aboutModal = document.getElementById('about-modal');
+  const shouldOpen = aboutModal.classList.contains('hidden');
+  if (shouldOpen) {
+    openAboutModal();
+  } else {
+    setModalVisibility('about-modal', false);
+    setToggleActive('about-toggle', false);
+  }
+});
+
+document.getElementById('quickstart-toggle').addEventListener('click', () => {
+  const quickstartModal = document.getElementById('quickstart-modal');
+  const shouldOpen = quickstartModal.classList.contains('hidden');
+  if (shouldOpen) {
+    openQuickStartModal();
+  } else {
+    setModalVisibility('quickstart-modal', false);
+    setToggleActive('quickstart-toggle', false);
+  }
+});
+
+document.addEventListener('click', (e) => {
+  const isAboutModalOpen = !document.getElementById('about-modal').classList.contains('hidden');
+  const clickedAboutOutside = !document.getElementById('about-modal').contains(e.target);
+  const clickedAboutToggle = document.getElementById('about-toggle').contains(e.target);
+
+  const isQuickStartModalOpen = !document.getElementById('quickstart-modal').classList.contains('hidden');
+  const clickedQuickStartOutside = !document.getElementById('quickstart-modal').contains(e.target);
+  const clickedQuickStartToggle = document.getElementById('quickstart-toggle').contains(e.target);
+  
+
+  if (isAboutModalOpen && clickedAboutOutside && !clickedAboutToggle) {
+    setModalVisibility('about-modal', false);
+    setToggleActive('about-toggle', false);
+  }
+  if (isQuickStartModalOpen && clickedQuickStartOutside && !clickedQuickStartToggle) {
+    setModalVisibility('quickstart-modal', false);
+    setToggleActive('quickstart-toggle', false);
+  }
 });
 
 document.getElementById('btn-fullscreen').addEventListener('click', () => {
@@ -115,7 +217,7 @@ function saveUISettings() {
     size: document.getElementById('val-size').value,
     intensity: document.getElementById('val-intensity').value,
     opacity: document.getElementById('val-opacity').value,
-    spread: document.getElementById('val-spread')?.value || 2.0,
+    spread: document.getElementById('val-spread').value,
     autoRotate: document.getElementById('toggle-sleep-rotate').checked
   };
   
@@ -193,6 +295,8 @@ sliderWrappers.forEach(wrapper => {
 document.getElementById('data-toggle').addEventListener('click', () => {
   document.getElementById('settings-panel').classList.remove('open');
   document.getElementById('settings-toggle').classList.remove('open') ;
+  setModalVisibility('about-modal', false);
+  setModalVisibility('quickstart-modal', false);
   document.getElementById('data-panel').classList.toggle('open');
   document.getElementById('data-toggle').classList.toggle('open');
 });
@@ -313,6 +417,10 @@ async function initGalaxy() {
   
   if (savedGalaxy) {
     currentSessionId = savedSessionId;
+    const hasSeenQuickStart = await loadLocalData(QUICKSTART_FLAG_KEY);
+    if (!hasSeenQuickStart) {
+      await markQuickStartSeen();
+    }
     document.getElementById('upload-prompt').style.display = 'none';
     updateDataPanelUI(savedFileName);
     buildThreeJsScene(savedGalaxy);
@@ -381,6 +489,8 @@ async function processFileUpload(file) {
     }
     
     buildThreeJsScene(json.nodes);
+
+    await maybeShowQuickStartModal();
 
   } catch (error) {
     console.error(error);
@@ -544,15 +654,31 @@ function buildThreeJsScene(nodes) {
 }
 
 function centerCamera(zoomLevel) {
-  if (!pointCloud) return;
-  pointCloud.geometry.computeBoundingSphere();
-  const sphere = pointCloud.geometry.boundingSphere;
+  if (!nodeData || nodeData.length === 0) return;
 
-  const centerX = sphere.center.x * spreadFactor;
-  const centerY = sphere.center.y * spreadFactor;
-  const centerZ = sphere.center.z * spreadFactor;
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
 
-  const zoomDistance = sphere.radius * spreadFactor * zoomLevel;
+  for (let i = 0; i < nodeData.length; i++) {
+    const p = nodeData[i];
+    if (p.x < minX) minX = p.x;
+    if (p.y < minY) minY = p.y;
+    if (p.z < minZ) minZ = p.z;
+    if (p.x > maxX) maxX = p.x;
+    if (p.y > maxY) maxY = p.y;
+    if (p.z > maxZ) maxZ = p.z;
+  }
+
+  const centerX = ((minX + maxX) / 2) * spreadFactor;
+  const centerY = ((minY + maxY) / 2) * spreadFactor;
+  const centerZ = ((minZ + maxZ) / 2) * spreadFactor;
+
+  const radiusX = (maxX - minX) / 2;
+  const radiusY = (maxY - minY) / 2;
+  const radiusZ = (maxZ - minZ) / 2;
+  const maxRadius = Math.max(radiusX, radiusY, radiusZ); 
+
+  const zoomDistance = maxRadius * spreadFactor * zoomLevel;
 
   centertargetControlsPos.set(centerX, centerY, centerZ);
   centertargetCameraPos.set(centerX, centerY, centerZ + zoomDistance);
@@ -599,7 +725,7 @@ async function liveUpdateColors() {
   }
 }
 
-const debouncedLiveUpdate = debounce(liveUpdateColors, 50);
+const debouncedLiveUpdate = debounce(liveUpdateColors, 150);
 
 document.getElementById('val-eps').addEventListener('input', (e) => {
   debouncedLiveUpdate();
@@ -875,6 +1001,7 @@ document.addEventListener('visibilitychange', () => {
 
 loadCameraState();
 loadUISettings();
+renderMarkdown(document.getElementById('about-modal-content'), aboutMarkdown);
 initGalaxy();
 
 animate();
