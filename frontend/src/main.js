@@ -345,12 +345,11 @@ async function processFileUpload(file) {
 
   try {
     const fileText = await file.text();
-    const customData = JSON.parse(fileText);
 
     const response = await fetch('https://api.trace-app.net/api/upload-history', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(customData)
+      body: fileText,
     });
 
     if (!response.ok) throw new Error("Server rejected the upload.");
