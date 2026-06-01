@@ -83,6 +83,13 @@
           <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Visual Aesthetics</div>
           
           <div class="control-group">
+            <label>Global Brightness</label>
+            <div class ="slider-wrapper">
+              <input type="range" id="val-opacity" min="0.1" max="2.0" value="1.0" step="0.05">
+              <span class="slider-tooltip">1.0</span>
+            </div>
+          </div>
+          <div class="control-group">
             <label>Node Size</label>
             <div class ="slider-wrapper">
               <input type="range" id="val-size" min="5" max="35" value="10" step="0.5">
@@ -94,13 +101,6 @@
             <div class ="slider-wrapper">
               <input type="range" id="val-intensity" min="0" max="4.5" value="1.5" step="0.1">
               <span class="slider-tooltip">1.5</span>
-            </div>
-          </div>
-          <div class="control-group">
-            <label>Global Brightness</label>
-            <div class ="slider-wrapper">
-              <input type="range" id="val-opacity" min="0.1" max="2.0" value="1.0" step="0.05">
-              <span class="slider-tooltip">1.0</span>
             </div>
           </div>
           <div class="control-group">
@@ -211,7 +211,7 @@
           Select Data File
         </label>
         <input type="file" id="file-upload" accept=".json" />
-        <label style="margin-top: 20px; margin-bottom: -10px">* Loading may take a moment(~1.5 MB/s)</label>
+        <label style="margin-top: 20px; margin-bottom: -10px">* Loading may take a moment(up to 5 minutes)</label>
       </div>
     </div>
 

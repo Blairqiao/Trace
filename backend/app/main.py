@@ -7,21 +7,34 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from app.pipeline import run_dbscan, run_umap_dbscan
 from app.history_nlp import generate_embeddings, load_and_clean_chrome_history
+import gc
 
 async def clean_expired_sessions():
     try:
         while True:
-            await asyncio.sleep(3600)
+            await asyncio.sleep(10)
             
             now = datetime.now()
             expired_keys = []
             
             for session_id, data in SESSION_CACHE.items():
-                if now - data["timestamp"] > timedelta(hours=1):
+                if now - data["timestamp"] > timedelta(minutes=1):
                     expired_keys.append(session_id)
-                    
-            for key in expired_keys:
-                del SESSION_CACHE[key]
+            
+            if expired_keys:
+                print(f"Cleaning up expired sessions: {expired_keys}")
+
+                for key in expired_keys:
+                    del SESSION_CACHE[key]["raw_data"]
+                    del SESSION_CACHE[key]["embeddings"]
+                    del SESSION_CACHE[key]["coords_3d"]
+
+                    del SESSION_CACHE[key]
+                    print(f"✅ Session {key} deleted.")
+
+            gc.collect() 
+            print("🧹 Garbage collection complete. RAM should be freed.")
+
                 
     except asyncio.CancelledError:
         print("Session cleanup task gracefully stopped.")

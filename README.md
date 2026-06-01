@@ -124,7 +124,7 @@ There are several exciting features planned for future releases to make this too
 This project is open-source and licensed under the **AGPL-3.0 License**.
 
 * **Frontend Engine:** Built with [Vite](https://vitejs.dev/) and [Three.js](https://threejs.org/) (MIT License). Hosted on [Vercel](https://vercel.com/home).
-* **Backend Engine:** Powered by [FastAPI](https://fastapi.tiangolo.com/) and [Uvicorn](https://www.uvicorn.org/) (MIT License). Hosted on [DigitalOcean Droplets](https://www.digitalocean.com/) with [Nginx](https://nginx.org/) reverse proxy and Let's [Encrypt SSL](https://letsencrypt.org/).
+* **Backend Engine:** Powered by [FastAPI](https://fastapi.tiangolo.com/) and [Uvicorn](https://www.uvicorn.org/) (MIT License). Hosted on [DigitalOcean Droplets](https://www.digitalocean.com/) with [Nginx](https://nginx.org/) reverse proxy and [Let's Encrypt SSL](https://letsencrypt.org/).
 * **Dimensionality Reduction:** Powered by [UMAP‑learn](https://umap-learn.readthedocs.io/) (BSD 3-Clause License).
 * **Natural Language Processing:** Sentence embeddings via [Hugging Face Transformers](https://huggingface.co/transformers/) and [Sentence-Transformers](https://www.sbert.net/) (Apache 2.0).
 
