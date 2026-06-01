@@ -12,5 +12,7 @@ def find_clusters(coords_3d, eps=0.3, min_samples=3):
     )
     
     cluster_labels = clusterer.fit_predict(coords_3d)
+
+    del clusterer
     
     return cluster_labels

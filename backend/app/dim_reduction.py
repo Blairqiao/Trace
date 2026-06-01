@@ -1,5 +1,4 @@
 import umap
-from sklearn.preprocessing import StandardScaler
 
 def reduce_to_3d(embeddings, n_neighbors=15, min_dist=0.1, seed=-1):
     """
@@ -16,8 +15,8 @@ def reduce_to_3d(embeddings, n_neighbors=15, min_dist=0.1, seed=-1):
         random_state=seed
     )
     
-    scaled_embeddings = StandardScaler().fit_transform(embeddings)
-    
-    coords_3d = reducer.fit_transform(scaled_embeddings)
+    coords_3d = reducer.fit_transform(embeddings)
+
+    del reducer
     
     return coords_3d

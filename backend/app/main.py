@@ -84,6 +84,8 @@ async def upload_history(request: Request):
     
     df = load_and_clean_chrome_history(history)
     embeddings = generate_embeddings(df)
+
+    del history
     
     SESSION_CACHE[session_id] = {
         "raw_data": df,
@@ -95,6 +97,7 @@ async def upload_history(request: Request):
     nodes, coords_3d = run_umap_dbscan(df, embeddings, 1500, 15, 0.1, -1, 0.3, 3)
     
     SESSION_CACHE[session_id]["coords_3d"] = coords_3d
+    gc.collect()
 
     return {"session_id": session_id, "nodes": nodes}
 
@@ -131,6 +134,7 @@ async def recalculate_galaxy(
             )
             
             SESSION_CACHE[session_id]["coords_3d"] = coords_3d
+            gc.collect()
 
             return {
                 "status": "success",
@@ -169,6 +173,8 @@ async def recluster(
                 eps=eps,
                 min_samples=min_samples
             )
+
+            gc.collect()
             
             return {
                 "status": "success",

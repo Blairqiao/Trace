@@ -1,5 +1,6 @@
 import pandas as pd
 from sentence_transformers import SentenceTransformer
+from sklearn.preprocessing import StandardScaler
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
@@ -8,8 +9,7 @@ def load_and_clean_chrome_history(data: dict) -> pd.DataFrame:
     history_list = data.get("Browser History", [])
     
     records = []
-    for _ in range(len(history_list)):
-        item = history_list.pop(0)
+    for item in history_list:
         title = item.get("title", "")
         url = item.get("url", "")
         
@@ -23,6 +23,9 @@ def load_and_clean_chrome_history(data: dict) -> pd.DataFrame:
     df = pd.DataFrame(records)    
     df = df.drop_duplicates(subset=['title']).reset_index(drop=True) 
     
+    del history_list
+    del records
+
     print(f"Loaded {len(df)} unique pages from your Chrome history.")
     return df
 
@@ -31,6 +34,14 @@ def generate_embeddings(df: pd.DataFrame) -> list:
     titles = df['title'].tolist()
     
     print("Generating 384-dimensional embeddings...")
-    embeddings = model.encode(titles, show_progress_bar=True)
-    embeddings = embeddings.astype('float32')
-    return embeddings.tolist()
+    raw_embeddings = model.encode(titles, show_progress_bar=True)
+
+    del titles
+
+    Scaler = StandardScaler()
+    scaled_embeddings = Scaler.fit_transform(raw_embeddings)
+
+    del raw_embeddings
+    del Scaler
+
+    return scaled_embeddings.astype('float32')

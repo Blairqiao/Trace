@@ -57,6 +57,7 @@ function loadCameraState() {
 let pointCloud = null;
 let currentSessionId = null;
 let isDemoMode = false;
+let node_count = 1500;
 let nodeData = []; 
 const colors = [
   0xff0a54, 0x00f5d4, 0xffca3a, 0x3377aa, 0x9b5de5,
@@ -575,6 +576,7 @@ async function recalculateGalaxy() {
     }
     
     const json = await response.json();
+    node_count = max_items;
     
     await saveLocalData('userGalaxy', json.nodes);
     
@@ -698,7 +700,7 @@ function debounce(func, wait) {
 async function liveUpdateColors() {
   if (!pointCloud || !currentSessionId) return;
 
-  const max_items = document.getElementById('val-limit').value;
+  const max_items = node_count;
   const eps = document.getElementById('val-eps').value;
   const min_samples = document.getElementById('val-samples').value;
 
