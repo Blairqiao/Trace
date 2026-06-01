@@ -32,8 +32,8 @@ async def clean_expired_sessions():
                     del SESSION_CACHE[key]
                     print(f"✅ Session {key} deleted.")
 
-            gc.collect() 
-            print("🧹 Garbage collection complete. RAM should be freed.")
+                gc.collect() 
+                print("🧹 Garbage collection complete. RAM should be freed.")
 
                 
     except asyncio.CancelledError:
@@ -112,7 +112,8 @@ async def recalculate_galaxy(
     
     if session_id not in SESSION_CACHE:
         raise HTTPException(status_code=404, detail="SESSION_EXPIRED")
-        
+    
+    SESSION_CACHE[session_id]["timestamp"] = datetime.now()
     cached_data = SESSION_CACHE[session_id]
     
     async with pipeline_lock:
@@ -152,6 +153,7 @@ async def recluster(
     if session_id not in SESSION_CACHE:
         raise HTTPException(status_code=404, detail="SESSION_EXPIRED")
 
+    SESSION_CACHE[session_id]["timestamp"] = datetime.now()
     cached_data = SESSION_CACHE[session_id]
 
     if "coords_3d" not in cached_data:
