@@ -221,29 +221,36 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   position: fixed;
   top: 0;
   left: 0;
-  width: 320px;
+  width: 360px;
   height: 100vh;
   background: rgba(10, 10, 15, 0.17);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   transform: translateX(-100%); 
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 999;
-  padding: 60px 20px 40px 20px;
   color: white;
   backdrop-filter: blur(6px) saturate(140%);
+}
+
+
+#settings-panel.open {
+  transform: translateX(0); /* Slide in */
+}
+
+.settings-content {
   overflow-y: auto;
+  padding: 60px 20px 40px 20px;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0px, transparent 50px, black 60px, black 100%);
   mask-image: linear-gradient(to bottom, transparent 0px, transparent 50px, black 60px, black 100%);
 }
 
-.settings-panel::-webkit-scrollbar {
+.settings-content::-webkit-scrollbar {
   display: none;
-}
-
-#settings-panel.open {
-  transform: translateX(0); /* Slide in */
 }
 
 /* The Parameter UI */
