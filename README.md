@@ -65,7 +65,7 @@ Because everyone's browsing history is completely unique in density and scope, o
 * **Node Count:** Controls the maximum number of unique nodes rendered.
 * **Topic Broadness:** Determines the specificity of relationships. Low values focus on local, tight relationships; high values look at the broader, overarching structure.
 * **Repulsion Factor:** Controls the density of the galaxy. Low values result in dense, tight clumps, while higher values spread the nodes out.
-* **Random Seed:** The default is `-1` (entirely random), but a specific integer can be set to generate reproducible results.
+* **Random Seed:** The default is `-1` (entirely random), but a specific integer can be set to generate reproducible results.  *(Note: Seeded calculations cannot utlize multi-threading and may be slower than fully random results)*
 
 ### Cluster Settings
 * **Cluster Radius:** The maximum distance between two nodes for them to be considered part of the same semantic cluster.

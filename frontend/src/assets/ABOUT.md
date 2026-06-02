@@ -17,7 +17,7 @@ These sliders control the underlying mathematical shape of your data.
 * **Node Count:** The maximum number of unique history nodes processed and rendered.
 * **Topic Broadness (Neighbors):** Determines the specificity of relationships. Low values focus on very local, tight relationships (creating isolated clumps), while high values look at the broader, overarching structure of your history.
 * **Repulsion Factor (Min Distance):** Controls how tightly points are allowed to pack together. Low values result in dense, tight clusters, while higher values spread the nodes out for easier individual selection.
-* **Random Seed:** The default is `-1` (entirely random), but a specific integer can be set to generate reproducible results.
+* **Random Seed:** The default is `-1` (entirely random), but a specific integer can be set to generate reproducible results. *(Note: Seeded calculations cannot utlize multi-threading and may be slower than fully random results)*
 
 ### Cluster Settings (DBSCAN)
 These sliders control how the colors and groupings are calculated.
