@@ -1,5 +1,6 @@
 from app.dim_reduction import reduce_to_3d
 from app.clustering import find_clusters
+import pandas as pd
 
 def run_dbscan(df, coords_3d, max_items=1500, eps=0.3, min_samples=3):
     cluster_labels = find_clusters(coords_3d, eps=eps, min_samples=min_samples)
@@ -24,6 +25,7 @@ def run_umap_dbscan(df, embeddings, max_items=1500, n_neighbors=15, min_dist=0.1
             "id": i,
             "title": str(row.title),
             "url": str(row.url),
+            "timestamp": int(row.timestamp),
             "x": float(coords_3d[i, 0]),
             "y": float(coords_3d[i, 1]),
             "z": float(coords_3d[i, 2]),

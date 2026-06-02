@@ -88,6 +88,24 @@ const resetIdleTimer = () => {
   if (controls.autoRotate) controls.autoRotate = false;
 };
 
+function formatChromeTimestamp(timeUsec) {
+    if (!timeUsec || timeUsec === 0) return "Unknown Date";
+
+    const chromeMs = timeUsec / 1000;
+    
+    const unixMs = chromeMs - 11644473600000;
+    
+    const date = new Date(unixMs);
+    
+    return date.toLocaleString(undefined, {
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric', 
+        hour: 'numeric', 
+        minute: '2-digit'
+    });
+}
+
 function setModalVisibility(modalId, isVisible) {
   const modal = document.getElementById(modalId);
   if (!modal) return;
@@ -273,15 +291,15 @@ sliderWrappers.forEach(wrapper => {
   const tooltip = wrapper.querySelector('.slider-tooltip');
 
   const updateTooltip = () => {
-    const min = parseFloat(slider.min) || 0;
-    const max = parseFloat(slider.max) || 100;
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
     const val = parseFloat(slider.value);
 
     tooltip.innerText = val;
 
     const percent = (val - min) / (max - min);
 
-    const thumbWidth = 4; 
+    const thumbWidth = 12; 
     const offset = (0.5 - percent) * thumbWidth;
 
     tooltip.style.left = `calc(${percent * 100}% + ${offset}px)`;
@@ -768,7 +786,7 @@ const forcefieldMat = new THREE.SpriteMaterial({
   map: createForcefieldTexture(), 
   color: 0xffffff,
   transparent: true,
-  opacity: 0.4,                      // Overall brightness multiplier
+  opacity: 0.4,
   blending: THREE.AdditiveBlending, 
   depthWrite: false
 });
@@ -917,7 +935,7 @@ function animate() {
       pointCloud.geometry.computeBoundingSphere();
     }
 
-    if (isAnimating || isDemoMode) {
+    if (isAnimating || isDemoMode || controls.autoRotate) {
       if (hoveredId !== null) {
         hoveredId = null;
         if (tooltip) tooltip.style.opacity = 0;
@@ -936,6 +954,7 @@ function animate() {
           
           document.getElementById('tt-cluster').innerText = ud.cluster === -1 ? 'Isolated Search' : `Cluster ${ud.cluster}`;
           document.getElementById('tt-title').innerText = ud.title;
+          document.getElementById('tt-date').innerText = formatChromeTimestamp(ud.timestamp);
           tooltip.style.opacity = 1;
           document.body.style.cursor = 'pointer';
 

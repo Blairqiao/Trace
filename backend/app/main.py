@@ -12,17 +12,15 @@ import gc
 async def clean_expired_sessions():
     try:
         while True:
-            await asyncio.sleep(10)
+            await asyncio.sleep(300)
             
             now = datetime.now()
             expired_keys = []
-            
             for session_id, data in SESSION_CACHE.items():
-                if now - data["timestamp"] > timedelta(minutes=1):
+                if now - data["timestamp"] > timedelta(hours=1):
                     expired_keys.append(session_id)
             
             if expired_keys:
-                print(f"Cleaning up expired sessions: {expired_keys}")
 
                 for key in expired_keys:
                     del SESSION_CACHE[key]["raw_data"]
@@ -30,10 +28,11 @@ async def clean_expired_sessions():
                     del SESSION_CACHE[key]["coords_3d"]
 
                     del SESSION_CACHE[key]
-                    print(f"✅ Session {key} deleted.")
 
+                print(f"Cleaned up {len(expired_keys)} expired sessions.")
+                expired_keys.clear()
+                
                 gc.collect() 
-                print("🧹 Garbage collection complete. RAM should be freed.")
 
                 
     except asyncio.CancelledError:
@@ -91,12 +90,12 @@ async def upload_history(request: Request):
         "raw_data": df,
         "embeddings": embeddings,
         "coords_3d": None,
-        "timestamp": datetime.now()
     }
     
     nodes, coords_3d = run_umap_dbscan(df, embeddings, 1500, 15, 0.1, -1, 0.3, 3)
     
     SESSION_CACHE[session_id]["coords_3d"] = coords_3d
+    SESSION_CACHE[session_id]["timestamp"] = datetime.now()
     gc.collect()
 
     return {"session_id": session_id, "nodes": nodes}
