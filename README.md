@@ -9,26 +9,14 @@ A full-stack, real-time 3D visualization dashboard that converts your Google Chr
 
 ## Showcase
 
-<video autoplay loop muted playsinline width="100%" alt="Trace Demo">
-  <source src="./readme_assets/trace_demo.mp4" type="video/mp4">
-</video>
+<video src="./readme_assets/trace_demo.mp4" autoplay loop muted playsinline></video>
+<p align="center"><em>Trace Galaxy Demo</em></p>
 
-<div align=center style="margin: 10px; margin-bottom: 20px;">
-    <i>Trace Galaxy Demo</i>
-</div>
+![Trace Ex](./readme_assets/nebula.png)
+<p align="center"><em>3D map with over 30,000 nodes</em></p>
 
-<img src="./readme_assets/nebula.png" alt="Trace Ex" style="width: 100%; height: auto;"/>
-
-<div align=center style="margin: 10px; margin-bottom: 20px;">
-    <i>3D map with over 30,000 nodes</i>
-</div>
-
-<img src="./readme_assets/info_ex.png" alt="Info Ex" style="width: 100%; height: auto;"/>
-
-<div align=center style="margin: 10px; margin-bottom: 20px;">
-    <i>Highlighted node information</i>
-</div>
-
+![Info Ex](./readme_assets/info_ex.png)
+<p align="center"><em>Highlighted node information</em></p>
 
 ## Motivation
 Trace was built around the idea of discovering unintuitive patterns in our daily lives. While a normal scroll through your search history may seem like a linear, jumbled mess of ideas, Trace allows you to visualize your digital journey as colorful clusters in 3D space. 
@@ -51,10 +39,7 @@ This visualization is made possible by [Google Takeout](https://takeout.google.c
 
 Once you have your `History.json` ready, go to **[Trace](https://trace-app.net)** and upload the file.
 
-<div style="background: #313131; border-left:4px solid #FFCA28;padding:12px 14px;border-radius:8px;margin:10px 0;font-size:0.95rem;">
-  <strong style="color: #FFCA28;">Privacy First:</strong>
-  <span style="margin-left:8px;">Trace is 100% private. It uses your local browser storage and the backend server's RAM to process your data. Trace will NEVER record, store, or sell your data.</span>
-</div>
+> **Privacy First:** Trace is 100% private. It uses your local browser storage and the backend server's RAM to process your data. Trace will NEVER record, store, or sell your data.
 
 *Note: Processing your data will take some time. A 60MB file will take approximately 5 minutes to calculate the embeddings and load the visualization.*
 
@@ -94,24 +79,17 @@ Because everyone's browsing history is completely unique in density and scope, o
 
 ### Examples
 
-<div align="center" style="display: flex; justify-content: center; gap: 2%; flex-wrap: wrap;">
-  <figure style="flex: 1 1 320px; max-width: 46%; margin: 0; text-align: center;">
-    <img src="./readme_assets/sparse_nodes.png" alt="Sparse Nodes" style="width: 100%; height: auto;"/>
-    <figcaption><em>Sparse Nodes</em></figcaption>
-  </figure>
 
-  <figure style="flex: 1 1 320px; max-width: 46%; margin: 0; text-align: center;">
-    <img src="./readme_assets/dense_cluster.png" alt="Dense Cluster" style="width: 100%; height: auto;"/>
-    <figcaption><em>Dense Cluster</em></figcaption>
-  </figure>
-</div>
+![Trace Ex](./readme_assets/sparse_nodes.png)
+<p align="center"><em>Sparse Nodes</em></p>
 
+![Info Ex](./readme_assets/dense_cluster.png)
+<p align="center"><em>Dense Cluster</em></p>
 
 ## Roadmap & Future Updates
 There are several exciting features planned for future releases to make this tool faster, smarter, and more accessible.
 
 ### Short-Term Enhancements (UI/UX)
-* **Timestamping:** Add temporal data to each node's info panel.
 * **Cluster Labeling:** Utilize NLP to automatically generate an overarching name/theme for each cluster.
 * **Temporal Filtering:** Add a timeline slider to filter the rendered galaxy by specific dates, months, or years, allowing users to watch their interests evolve over time.
 

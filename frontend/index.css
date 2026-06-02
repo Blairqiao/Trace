@@ -381,7 +381,7 @@ input[type="checkbox"]:checked::after {
   transform: translate(15px, 15px); max-width: 300px; z-index: 10;
 }
 #tooltip .cluster { font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
-#tooltip .title { font-weight: bold; font-size: 1rem; }
+#tooltip .title { font-weight: bold; font-size: 1rem; overflow-wrap: anywhere; word-break: normal;}
 
 .centered-prompt {
   position: absolute;

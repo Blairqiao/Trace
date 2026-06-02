@@ -93,7 +93,7 @@ function formatChromeTimestamp(timeUsec) {
 
     const chromeMs = timeUsec / 1000;
     
-    const unixMs = chromeMs - 11644473600000;
+    const unixMs = chromeMs;
     
     const date = new Date(unixMs);
     
