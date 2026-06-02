@@ -54,5 +54,5 @@ Trace is an open-source tool licensed under the **AGPL-3.0 License**. It is made
 ### About the Developer
 Trace is built and maintained by Blair Qiao, a Computer Science student at the University of Texas at Austin. The project was driven by a fascination with the data we leave behind every day, built specifically to help people discover the unintuitive patterns buried within their daily digital lives.
 
-* 💻 **Source Code:** [View the repository on GitHub](https://github.com/Blairqiao)
-* 📬 **Contact:** yanzhe.qiao.1@gmail.com
+* **Source Code:** [View the repository on GitHub](https://github.com/Blairqiao)
+* **Contact:** yanzhe.qiao.1@gmail.com
