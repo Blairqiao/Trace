@@ -9,8 +9,7 @@ A full-stack, real-time 3D visualization dashboard that converts your Google Chr
 
 ## Showcase
 
-<!-- <video src="./readme_assets/trace_demo.mp4" autoplay loop muted playsinline></video> -->
-![Trace Demo](./readme_assets/trace_demo.gif)
+https://github.com/user-attachments/assets/b5fb0a33-1136-4031-abbf-235505106ef2
 <p align="center"><em>Trace Galaxy Demo</em></p>
 
 ![Trace Ex](./readme_assets/nebula.png)
