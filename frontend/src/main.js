@@ -127,6 +127,9 @@ function closeAllOverlays() {
   setModalVisibility('quickstart-modal', false);
   setToggleActive('about-toggle', false);
   setToggleActive('quickstart-toggle', false);
+  setModalVisibility('history-modal', false);
+  setToggleActive('history-toggle', false);
+  setToggleActive('history-toggle-link', false);
 }
 
 function renderMarkdown(target, markdown) {
@@ -144,6 +147,12 @@ function openQuickStartModal() {
   closeAllOverlays();
   setModalVisibility('quickstart-modal', true);
   setToggleActive('quickstart-toggle', true);
+}
+
+function openHistoryModal() {
+  document.getElementById('settings-panel').classList.remove('open');
+  document.getElementById('settings-toggle').classList.remove('open');
+  setModalVisibility('history-modal', true);
 }
 
 async function markQuickStartSeen() {
@@ -165,6 +174,8 @@ async function maybeShowQuickStartModal() {
 document.getElementById('settings-toggle').addEventListener('click', () => {
   document.getElementById('data-panel').classList.remove('open');
   document.getElementById('data-toggle').classList.remove('open') ;
+  document.getElementById('about-toggle').classList.remove('open');
+  document.getElementById('quickstart-toggle').classList.remove('open');
   setModalVisibility('about-modal', false);
   setModalVisibility('quickstart-modal', false);
   document.getElementById('settings-panel').classList.toggle('open');
@@ -193,6 +204,28 @@ document.getElementById('quickstart-toggle').addEventListener('click', () => {
   }
 });
 
+document.getElementById('history-toggle').addEventListener('click', () => {
+  const shouldOpen = document.getElementById('history-modal').classList.contains('hidden');
+  if (shouldOpen) {
+    setToggleActive('history-toggle', true);
+    openHistoryModal();
+  } else {
+    setModalVisibility('history-modal', false);
+    setToggleActive('history-toggle', false);
+  }
+});
+document.getElementById('history-toggle-link').addEventListener('click', () => {
+  const shouldOpen = document.getElementById('history-modal').classList.contains('hidden');
+  if (shouldOpen) {
+    setToggleActive('history-toggle-link', true);
+    openHistoryModal();
+  } else {
+    setModalVisibility('history-modal', false);
+    setToggleActive('history-toggle-link', false);
+  }
+});
+
+
 document.addEventListener('click', (e) => {
   const isAboutModalOpen = !document.getElementById('about-modal').classList.contains('hidden');
   const clickedAboutOutside = !document.getElementById('about-modal').contains(e.target);
@@ -201,7 +234,11 @@ document.addEventListener('click', (e) => {
   const isQuickStartModalOpen = !document.getElementById('quickstart-modal').classList.contains('hidden');
   const clickedQuickStartOutside = !document.getElementById('quickstart-modal').contains(e.target);
   const clickedQuickStartToggle = document.getElementById('quickstart-toggle').contains(e.target);
-  
+  const isHistoryModalOpen = !document.getElementById('history-modal').classList.contains('hidden');
+  const clickedHistoryOutside = !document.getElementById('history-modal').contains(e.target);
+  const clickedHistoryToggle = document.getElementById('history-toggle').contains(e.target);
+  const clickedHistoryToggleLink = document.getElementById('history-toggle-link').contains(e.target);
+
 
   if (isAboutModalOpen && clickedAboutOutside && !clickedAboutToggle) {
     setModalVisibility('about-modal', false);
@@ -210,6 +247,11 @@ document.addEventListener('click', (e) => {
   if (isQuickStartModalOpen && clickedQuickStartOutside && !clickedQuickStartToggle) {
     setModalVisibility('quickstart-modal', false);
     setToggleActive('quickstart-toggle', false);
+  }
+  if (isHistoryModalOpen && clickedHistoryOutside && !clickedHistoryToggle && !clickedHistoryToggleLink) {
+    setModalVisibility('history-modal', false);
+    setToggleActive('history-toggle', false);
+    setToggleActive('history-toggle-link', false);
   }
 });
 
@@ -314,6 +356,8 @@ sliderWrappers.forEach(wrapper => {
 document.getElementById('data-toggle').addEventListener('click', () => {
   document.getElementById('settings-panel').classList.remove('open');
   document.getElementById('settings-toggle').classList.remove('open') ;
+  document.getElementById('about-toggle').classList.remove('open');
+  document.getElementById('quickstart-toggle').classList.remove('open');
   setModalVisibility('about-modal', false);
   setModalVisibility('quickstart-modal', false);
   document.getElementById('data-panel').classList.toggle('open');

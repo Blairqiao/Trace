@@ -139,7 +139,10 @@
 
     <div id="data-panel" class="glass-panel side-panel">
       <hr style="border-color: #333; margin: 15px 0; margin-top: -4px;">
-      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">Data Management</div>
+      <div class="panel-header">
+        <div style="font-size: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1px;">Data Management</div>
+        <button id="history-toggle" class="help-icon-btn" aria-label="How to get History.json">?</button>
+      </div>
       
       <div class="data-status">
         <span class="status-dot"></span>
@@ -197,10 +200,44 @@
       </div>
     </div>
 
+    <div id="history-modal" class="glass-modal hidden">
+      <div class="glass-modal-header">
+        <div>
+          <div class="modal-kicker" style="margin-bottom: 14px;">Data Collection</div>
+          <h2>Google Takeout</h2>
+        </div>
+      </div>
+      
+      <div class="modal-body">
+        <p class="modal-copy">Trace requires a local copy of your browsing history. You can securely download this directly from Google using their Takeout tool.</p>
+        
+        <div class="controls-grid" style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 10px;"> <strong>1:</strong> Go to <a href="https://takeout.google.com/" class="modal-link" target="_blank" rel="noopener noreferrer">Google Takeout</a></li>
+            <li style="margin-bottom: 10px;"> <strong>2:</strong> Click <b>"Deselect all"</b>.</li>
+            <li style="margin-bottom: 10px;"> <strong>3:</strong> Scroll down to <b>Chrome</b>.</li>
+            <li style="margin-bottom: 10px;"> <strong>4:</strong> Click <b>"All Chrome data included"</b>, deselect everything except <b>"History"</b>, and click OK.</li>
+            <li style="margin-bottom: 10px;"> <strong>5:</strong> Scroll to the bottom and click <b>"Next Step"</b>.</li>
+            <li style="margin-bottom: 10px;"> <strong>6:</strong> Choose your preferred export settings and click <b>"Export"</b>.</li>
+            <li> <strong>7:</strong> Extract the downloaded <code>.zip</code> file and locate the <code>History.json</code> file. Upload that file to the Trace dashboard.</li>
+          </ul>
+        </div>
+
+        <p class="modal-copy modal-footer-copy" style="font-size: 0.85rem; color: #888; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
+          <em>You can reopen this guide at any time by opening the data menu and clicking the
+            <button class="help-icon-btn" disabled>?</button>
+            symbol
+          </em>
+        </p>
+      </div>
+    </div>
+
     <div id="upload-prompt" class="centered-prompt">
       <div class="prompt-content">
         <h2>Trace Your Digital Footprint</h2>
-        <p>Upload your Chrome <code>History.json</code> to generate an interactive, 3D semantic map of your browsing habits.</p>
+        <p>Upload your Chrome <code>History.json</code> to generate an interactive, 3D semantic map of your browsing habits
+          <button id="history-toggle-link" class="help-icon-btn" aria-label="How to get History.json">?</button>
+        </p>
         
         <div class="privacy-badge">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
