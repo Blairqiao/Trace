@@ -29,7 +29,7 @@ This visualization is made possible by [Google Takeout](https://takeout.google.c
 **How to export your data:**
 1. Go to **[Google Takeout](https://takeout.google.com/)**.
 2. Click **"Deselect all"**.
-3. Scroll down to **Chrome**.
+3. Scroll down and select **Chrome**.
 4. Click **"All Chrome data included"**.
 5. Click **"Deselect all"** again, then select **"History"**.
 6. Scroll to the bottom and click **"Next Step"**.
