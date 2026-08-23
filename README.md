@@ -7,6 +7,9 @@
 
 A full-stack, real-time 3D visualization dashboard that converts your Google Chrome browsing history into an interactive, semantic galaxy using text embeddings and UMAP dimensionality reduction.
 
+> **Backend Availability Notice**  
+> The live deployment at [trace-app.net](https://trace-app.net) connects to a self-hosted API backend. Because it runs locally via Cloudflare Tunnels rather than a dedicated cloud server, uptime is not guaranteed 24/7. If the API is offline, you can easily clone the repo and [run the backend locally](#local-deployment).
+
 ## Showcase
 
 https://github.com/user-attachments/assets/b5fb0a33-1136-4031-abbf-235505106ef2
@@ -86,6 +89,49 @@ Because everyone's browsing history is completely unique in density and scope, o
 ![Info Ex](./readme_assets/dense_cluster.png)
 <p align="center"><em>Dense Cluster</em></p>
 
+## Local Deployment
+
+If you prefer to run Trace entirely on your own machine or if the remote backend API is offline, you can run both the FastAPI backend and Vite frontend locally.
+
+### Prerequisites
+* **Python 3.10+**
+* **Node.js 18+** & **npm**
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Blairqiao/Spotify_Playlist_Visualizer.git
+cd Spotify_Playlist_Visualizer
+```
+
+### 2. Backend Setup
+```bash
+cd backend
+
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Start the FastAPI server
+uvicorn app.main:app --reload --port 8000
+```
+The backend API will be running locally at `http://localhost:8000`.
+
+### 3. Frontend Setup
+In a separate terminal:
+```bash
+cd frontend
+
+# Install dependencies
+npm install
+
+# Start the Vite development server
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
 ## Roadmap & Future Updates
 There are several exciting features planned for future releases to make this tool faster, smarter, and more accessible.
 
@@ -102,11 +148,13 @@ There are several exciting features planned for future releases to make this too
 This project is open-source and licensed under the **AGPL-3.0 License**.
 
 * **Frontend Engine:** Built with [Vite](https://vitejs.dev/) and [Three.js](https://threejs.org/) (MIT License). Hosted on [Vercel](https://vercel.com/home).
-* **Backend Engine:** Powered by [FastAPI](https://fastapi.tiangolo.com/) and [Uvicorn](https://www.uvicorn.org/) (MIT License). Hosted on [DigitalOcean Droplets](https://www.digitalocean.com/) with [Nginx](https://nginx.org/) reverse proxy and [Let's Encrypt SSL](https://letsencrypt.org/).
+* **Backend Engine:** Powered by [FastAPI](https://fastapi.tiangolo.com/) and [Uvicorn](https://www.uvicorn.org/) (MIT License). Self Hosted via [Cloudflare Tunnels](https://developers.cloudflare.com/tunnel/)
 * **Dimensionality Reduction:** Powered by [UMAP‑learn](https://umap-learn.readthedocs.io/) (BSD 3-Clause License).
 * **Natural Language Processing:** Sentence embeddings via [Hugging Face Transformers](https://huggingface.co/transformers/) and [Sentence-Transformers](https://www.sbert.net/) (Apache 2.0).
 
 ## Developer Profile
 **Built by Blair Qiao** | *University of Texas at Austin*
 * **GitHub:** [@Blairqiao](https://github.com/Blairqiao)
+* **LinkedIn:** [Yanzhe(Blair) Qiao](https://www.linkedin.com/in/yanzhe-qiao-794551413/)
+* **Portfolio:** https://blairqiao.com
 * **Contact:** yanzhe.qiao.1@gmail.com
