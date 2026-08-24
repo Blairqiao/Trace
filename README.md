@@ -94,7 +94,7 @@ Projecting high-dimensional text embeddings ($\mathbb{R}^{384}$ from Sentence Tr
 **Mathematical Implications:**
 * **False Neighbor Penalization:** The metric penalizes false positives—nodes that appear adjacent in the 3D galaxy despite lacking genuine semantic relatedness in the original embedding space.
 * **Score Interpretation:** A Fidelity score above 90% indicates strong topological preservation where spatial proximity faithfully reflects semantic affinity.
-* **Live Recalculation:** Adjusting UMAP hyperparameters (**Topic Broadness** / $n\text{\_neighbors}$ and **Repulsion Factor** / $\min\text{\_dist}$) triggers a live recalculation of coordinates and updates the Fidelity score dynamically.
+* **Live Recalculation:** Adjusting UMAP hyperparameters (**Topic Broadness** / n_neighbors and **Repulsion Factor** / min_dist) triggers a live recalculation of coordinates and updates the Fidelity score dynamically.
 
 ### Examples
 
