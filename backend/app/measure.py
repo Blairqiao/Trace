@@ -10,10 +10,10 @@ def measure_trustworthiness(embeddings, coords_3d, max_items, k=10):
     embeddings = normalize(embeddings[:max_items], norm='l2')
 
     if max_items > max_size:
-        indices = np.random.choice(max_items, max_size, replace=False)
+        indices = np.random.choice(embeddings.shape[0], max_size, replace=False)
         embeddings = embeddings[indices]
         coords_3d = coords_3d[indices]
-        
+
         del indices
     
     score = trustworthiness(embeddings, coords_3d, n_neighbors=k, metric="cosine")
