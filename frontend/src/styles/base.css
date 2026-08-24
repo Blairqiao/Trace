@@ -1,0 +1,96 @@
+/* Import Submodules (must precede rules in CSS spec) */
+@import './panels.css';
+@import './controls.css';
+@import './components.css';
+@import './animations.css';
+@import './markdown.css';
+
+:root {
+  /* Glass surfaces */
+  --glass-bg: rgba(20, 20, 20, 0.76);
+  --glass-bg-light: rgba(10, 10, 15, 0.17);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(6px) saturate(140%);
+  --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+
+  /* Accent palette */
+  --color-teal: #00f5d4;
+  --color-pink: #ff477e;
+  --color-red: #ef233c;
+  --color-surface: #050505;
+  --color-text: #ffffff;
+  --color-text-muted: #aaaaaa;
+  --color-text-dim: #888888;
+  --color-divider: #333333;
+  --color-track: #5656567e;
+
+  /* Z-index scale */
+  --z-canvas: 0;
+  --z-hud: 10;
+  --z-pill: 900;
+  --z-panel: 999;
+  --z-toggle: 1000;
+  --z-modal: 1100;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-family: monospace;
+}
+
+/* Layer 0: Canvas Viewport */
+#canvas-container {
+  width: 100vw;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: var(--z-canvas);
+}
+
+/* Semantic Layer Scaffolding (does not trap stacking contexts or intercept events) */
+#hud-overlay,
+#modal-layer,
+#nav-bar {
+  display: contents;
+}
+
+/* Common Text and Input Defaults */
+label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin-bottom: 4px;
+}
+
+input {
+  width: 100%;
+  background: var(--color-track);
+  border: 1px solid #444;
+  color: var(--color-text);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  outline: none;
+}
+
+code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}

@@ -1,0 +1,63 @@
+/* Markdown Rendered Content Styles */
+.markdown-body {
+  margin-top: -20px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, transparent 50px, black 5px, black 100%);
+  mask-image: linear-gradient(to bottom, transparent 0px, transparent 0px, black 5px, black 100%);
+}
+
+.markdown-body::-webkit-scrollbar {
+  display: none;
+}
+
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 22px 0 10px;
+  color: #fff;
+}
+
+.markdown-body h2:first-child,
+.markdown-body h3:first-child,
+.markdown-body h4:first-child {
+  margin-top: 0;
+}
+
+.markdown-body p,
+.markdown-body ul {
+  margin: 0 0 14px 0;
+}
+
+.markdown-body ul {
+  padding-left: 20px;
+}
+
+.markdown-body li {
+  margin-bottom: 8px;
+}
+
+.markdown-body strong {
+  color: #fff;
+}
+
+.markdown-body em {
+  color: #f3f3f3;
+}
+
+.markdown-body code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.markdown-body a {
+  color: var(--color-teal);
+  text-decoration: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.markdown-body a:hover {
+  opacity: 0.75;
+}

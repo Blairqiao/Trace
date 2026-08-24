@@ -5,325 +5,330 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Trace</title>
-  <link rel="stylesheet" href="index.css">
   <link rel="icon" type="image/svg" href="src/assets/Trace.svg">
-
 </head>
 
 <body>
-  <div id="settings-toggle">
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="4" y1="21" x2="4" y2="14"></line>
-      <line x1="4" y1="10" x2="4" y2="3"></line>
-      <line x1="12" y1="21" x2="12" y2="12"></line>
-      <line x1="12" y1="8" x2="12" y2="3"></line>
-      <line x1="20" y1="21" x2="20" y2="16"></line>
-      <line x1="20" y1="12" x2="20" y2="3"></line>
-      <line x1="1" y1="14" x2="7" y2="14"></line>
-      <line x1="9" y1="8" x2="15" y2="8"></line>
-      <line x1="17" y1="16" x2="23" y2="16"></line>
-    </svg>
-  </div>
+  <!-- Layer 0: Canvas Viewport -->
+  <main id="canvas-container"></main>
 
-  <div id="about-toggle" title="Additional Information">
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="10"></circle>
-      <path d="M12 16v-4"></path>
-      <path d="M12 8h.01"></path>
-    </svg>
-  </div>
-
-  <div id="settings-panel">
-    <div class="settings-content">
-      <hr style="border-color: #333; margin: 15px 0; margin-top: -4px;">
-      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-        Galaxy Controls</div>
-
-      <div>
-        <div class="control-group">
-          <label>Node Count</label>
-          <input type="number" id="val-limit" value="1500" step="100">
-        </div>
-        <div class="control-group">
-          <label>Random Seed</label>
-          <input type="number" id="val-seed" value="-1" step="1">
-        </div>
-        <div class="control-group">
-          <label>Topic Broadness</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-neighbors" min="5" max="100" value="15" step="1">
-            <span class="slider-tooltip">15</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>Repulsion Factor</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-dist" min="0.01" max="0.99" value="0.3" step="0.01">
-            <span class="slider-tooltip">0.3</span>
-          </div>
-        </div>
-        <button id="btn-recalculate">Recalculate Galaxy</button>
-        <hr style="border-color: #333; margin: 15px 0;">
-        <div
-          style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-          Cluster Settings</div>
-
-
-        <div class="control-group">
-          <label>Cluster Radius</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-eps" min="0.05" max="0.7" value="0.3" step="0.01">
-            <span class="slider-tooltip">0.3</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>Minimum Cluster Size</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-samples" min="3" max="20" value="3" step="1">
-            <span class="slider-tooltip">3</span>
-          </div>
-        </div>
-
-        <hr style="border-color: #333; margin: 15px 0;">
-        <div
-          style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-          Visual Aesthetics</div>
-
-        <div class="control-group">
-          <label>Global Brightness</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-opacity" min="0.1" max="2.0" value="1.0" step="0.05">
-            <span class="slider-tooltip">1.0</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>Node Size</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-size" min="5" max="35" value="10" step="0.5">
-            <span class="slider-tooltip">10</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>Glow Intensity</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-intensity" min="0" max="4.5" value="1.5" step="0.1">
-            <span class="slider-tooltip">1.5</span>
-          </div>
-        </div>
-        <div class="control-group">
-          <label>Galaxy Scale</label>
-          <div class="slider-wrapper">
-            <input type="range" id="val-spread" min="0.5" max="15.0" value="2.0" step="0.01">
-            <span class="slider-tooltip">2.0</span>
-          </div>
-        </div>
-      </div>
-
-      <hr style="border-color: #333; margin: 15px 0;">
-      <div style="font-size: 0.8rem; color: #fff; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-        Other Settings</div>
-
-
-      <div class="control-group checkbox-group">
-        <label for="toggle-sleep-rotate">Sleep Mode Rotation</label>
-        <input type="checkbox" id="toggle-sleep-rotate" checked>
-      </div>
-
-      <button id="btn-fullscreen" style="margin-bottom: 80px;">Toggle Fullscreen</button>
-    </div>
-  </div>
-
-  <div id="data-toggle">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-      stroke-linecap="round" stroke-linejoin="round">
-      <path
-        d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z">
-      </path>
-      <line x1="8" y1="13" x2="16" y2="13"></line>
-      <line x1="8" y1="17" x2="12" y2="17"></line>
-    </svg>
-  </div>
-
-  <div id="quickstart-toggle">
-    <img height="28" width="28" src="src/assets/Trace.svg" alt="Trace quick start" />
-  </div>
-
-  <div id="data-panel" class="glass-panel side-panel">
-    <hr style="border-color: #333; margin: 15px 0; margin-top: -4px;">
-    <div class="panel-header">
-      <div style="font-size: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1px;">Data Management</div>
-      <button id="history-toggle" class="help-icon-btn" aria-label="How to get History.json">?</button>
-    </div>
-
-    <div class="data-status">
-      <span class="status-dot"></span>
-      <p id="current-file-name">No data loaded</p>
-    </div>
-
-    <label id="data-panel-upload-label" for="data-panel-upload" class="premium-upload-btn small-btn">
-      Upload New History
-    </label>
-    <input type="file" id="data-panel-upload" accept=".json" style="display: none;" />
-
-    <button id="btn-clear-data" class="danger-btn">Clear Memory</button>
-  </div>
-
-  <div id="about-modal" class="glass-modal hidden">
-    <div class="glass-modal-header">
-      <div>
-        <div class="modal-kicker">Additional Information</div>
-      </div>
-    </div>
-    <div id="about-modal-content" class="modal-body markdown-body"></div>
-  </div>
-
-  <div id="quickstart-modal" class="glass-modal hidden">
-    <div class="glass-modal-header">
-      <div>
-        <div class="modal-kicker" style="margin-bottom: 14px;">Quick Start</div>
-        <h2>Navigating Trace</h2>
-      </div>
-    </div>
-
-    <div class="modal-body">
-      <p class="modal-copy">Your browsing history has been successfully mapped into a 3D semantic galaxy. Here is how to
-        move around:</p>
-
-      <div class="controls-grid"
-        style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-        <ul style="list-style: none; padding: 0; margin: 0;">
-          <li style="margin-bottom: 10px;"> <strong>Left-Click + Drag:</strong> Rotate the camera</li>
-          <li style="margin-bottom: 10px;"> <strong>Right-Click + Drag:</strong> Move the camera</li>
-          <li style="margin-bottom: 10px;"> <strong>Scroll Wheel:</strong> Zoom in and out</li>
-          <li style="margin-bottom: 10px;"> <strong>Double-Click Node:</strong> Fly to a specific node</li>
-          <li> <strong>Cmd/Ctrl + Click:</strong> Open the link in a new tab</li>
-        </ul>
-      </div>
-
-      <h3 style="font-size: 1rem; color: #fff; margin-bottom: 10px;">The Command Center</h3>
-      <ul class="quickstart-list" style="padding-left: 20px; color: #e0e0e0; line-height: 1.6;">
-        <li><strong> Settings:</strong> Tune the galaxy's shape and aesthetics.</li>
-        <li><strong> Data:</strong> Manage your active session or upload a new file.</li>
-        <li><strong> Info:</strong> Learn more about the parameters and read how this was made.</li>
-      </ul>
-
-      <p class="modal-copy modal-footer-copy"
-        style="font-size: 0.85rem; color: #888; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-        <em>You can reopen this guide at any time by clicking the Trace logo in the top-right corner.</em>
-      </p>
-    </div>
-  </div>
-
-  <div id="history-modal" class="glass-modal hidden">
-    <div class="glass-modal-header">
-      <div>
-        <div class="modal-kicker" style="margin-bottom: 14px;">Data Collection</div>
-        <h2>Google Takeout</h2>
-      </div>
-    </div>
-
-    <div class="modal-body">
-      <p class="modal-copy">Trace requires a local copy of your browsing history. You can securely download this
-        directly from Google using their Takeout tool.</p>
-
-      <div class="controls-grid"
-        style="margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-        <ul style="list-style: none; padding: 0; margin: 0;">
-          <li style="margin-bottom: 10px;"> <strong>1:</strong> Go to <a href="https://takeout.google.com/"
-              class="modal-link" target="_blank" rel="noopener noreferrer">Google Takeout</a></li>
-          <li style="margin-bottom: 10px;"> <strong>2:</strong> Click <b>"Deselect all"</b>.</li>
-          <li style="margin-bottom: 10px;"> <strong>3:</strong> Scroll down and select <b>Chrome</b>.</li>
-          <li style="margin-bottom: 10px;"> <strong>4:</strong> Click <b>"All Chrome data included"</b>, deselect
-            everything except <b>"History"</b>, and click OK.</li>
-          <li style="margin-bottom: 10px;"> <strong>5:</strong> Scroll to the bottom and click <b>"Next Step"</b>.</li>
-          <li style="margin-bottom: 10px;"> <strong>6:</strong> Choose your preferred export settings and click
-            <b>"Export"</b>.</li>
-          <li> <strong>7:</strong> Extract the downloaded <code>.zip</code> file and locate the
-            <code>History.json</code> file. Upload that file to the Trace dashboard.</li>
-        </ul>
-      </div>
-
-      <p class="modal-copy modal-footer-copy"
-        style="font-size: 0.85rem; color: #888; margin-top: 25px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px;">
-        <em>You can reopen this guide at any time by opening the data menu and clicking the
-          <button class="help-icon-btn" disabled>?</button>
-          symbol
-        </em>
-      </p>
-    </div>
-  </div>
-
-  <div id="upload-prompt" class="centered-prompt">
-    <div class="prompt-content">
-      <h2>Trace Your Digital Footprint</h2>
-      <p>Upload your Chrome <code>History.json</code> to generate an interactive, 3D semantic map of your browsing
-        habits
-        <button id="history-toggle-link" class="help-icon-btn" aria-label="How to get History.json">?</button>
-      </p>
-
-      <div class="privacy-badge">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  <!-- Layer 1: HUD & UI Overlay -->
+  <div id="hud-overlay">
+    <!-- Top-Level Navigation Toggles -->
+    <header id="nav-bar">
+      <button id="settings-toggle" type="button" aria-label="Galaxy Settings">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14"></line>
+          <line x1="4" y1="10" x2="4" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line>
+          <line x1="20" y1="21" x2="20" y2="16"></line>
+          <line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line>
+          <line x1="9" y1="8" x2="15" y2="8"></line>
+          <line x1="17" y1="16" x2="23" y2="16"></line>
         </svg>
-        <span>100% Private. Processed locally in your browser RAM.</span>
+      </button>
+
+      <button id="data-toggle" type="button" aria-label="Data Management">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path
+            d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z">
+          </path>
+          <line x1="8" y1="13" x2="16" y2="13"></line>
+          <line x1="8" y1="17" x2="12" y2="17"></line>
+        </svg>
+      </button>
+
+      <button id="about-toggle" type="button" aria-label="Additional Information" title="Additional Information">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
+      </button>
+
+      <button id="quickstart-toggle" type="button" aria-label="Quick Start Guide">
+        <img height="28" width="28" src="src/assets/Trace.svg" alt="Trace quick start" />
+      </button>
+    </header>
+
+    <!-- Side Panel: Settings -->
+    <aside id="settings-panel">
+      <div class="settings-content">
+        <hr class="section-divider section-divider-top">
+        <div class="section-heading">Galaxy Controls</div>
+
+        <div>
+          <div class="control-group">
+            <label for="val-limit">Node Count</label>
+            <input type="number" id="val-limit" value="1500" step="100">
+          </div>
+          <div class="control-group">
+            <label for="val-seed">Random Seed</label>
+            <input type="number" id="val-seed" value="-1" step="1">
+          </div>
+          <div class="control-group">
+            <label for="val-neighbors">Topic Broadness</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-neighbors" min="5" max="100" value="15" step="1">
+              <span class="slider-tooltip">15</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="val-dist">Repulsion Factor</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-dist" min="0.01" max="0.99" value="0.3" step="0.01">
+              <span class="slider-tooltip">0.3</span>
+            </div>
+          </div>
+          <button id="btn-recalculate" type="button">Recalculate Galaxy</button>
+          <hr class="section-divider">
+          <div class="section-heading">Cluster Settings</div>
+
+          <div class="control-group">
+            <label for="val-eps">Cluster Radius</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-eps" min="0.05" max="0.7" value="0.3" step="0.01">
+              <span class="slider-tooltip">0.3</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="val-samples">Minimum Cluster Size</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-samples" min="3" max="20" value="3" step="1">
+              <span class="slider-tooltip">3</span>
+            </div>
+          </div>
+
+          <hr class="section-divider">
+          <div class="section-heading">Visual Aesthetics</div>
+
+          <div class="control-group">
+            <label for="val-opacity">Global Brightness</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-opacity" min="0.1" max="2.0" value="1.0" step="0.05">
+              <span class="slider-tooltip">1.0</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="val-size">Node Size</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-size" min="5" max="35" value="10" step="0.5">
+              <span class="slider-tooltip">10</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="val-intensity">Glow Intensity</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-intensity" min="0" max="4.5" value="1.5" step="0.1">
+              <span class="slider-tooltip">1.5</span>
+            </div>
+          </div>
+          <div class="control-group">
+            <label for="val-spread">Galaxy Scale</label>
+            <div class="slider-wrapper">
+              <input type="range" id="val-spread" min="0.5" max="15.0" value="2.0" step="0.01">
+              <span class="slider-tooltip">2.0</span>
+            </div>
+          </div>
+        </div>
+
+        <hr class="section-divider">
+        <div class="section-heading">Other Settings</div>
+
+        <div class="control-group checkbox-group">
+          <label for="toggle-sleep-rotate">Sleep Mode Rotation</label>
+          <input type="checkbox" id="toggle-sleep-rotate" checked>
+        </div>
+
+        <button id="btn-fullscreen" class="btn-fullscreen" type="button">Toggle Fullscreen</button>
+      </div>
+    </aside>
+
+    <!-- Side Panel: Data Management -->
+    <aside id="data-panel" class="glass-panel side-panel">
+      <hr class="section-divider section-divider-top">
+      <div class="panel-header">
+        <div class="section-heading">Data Management</div>
+        <button id="history-toggle" class="help-icon-btn" aria-label="How to get History.json" type="button">?</button>
       </div>
 
-      <label id="premium-upload-label" for="file-upload" class="premium-upload-btn">
-        Select Data File
+      <div class="data-status">
+        <span class="status-dot"></span>
+        <p id="current-file-name">No data loaded</p>
+      </div>
+
+      <label id="data-panel-upload-label" for="data-panel-upload" class="premium-upload-btn small-btn">
+        Upload New History
       </label>
-      <input type="file" id="file-upload" accept=".json" />
-      <label style="margin-top: 20px; margin-bottom: -10px">* Loading may take a while(up to 5 minutes)</label>
-    </div>
-  </div>
+      <input type="file" id="data-panel-upload" accept=".json" style="display: none;" />
 
-  <div id="canvas-container"></div>
-  <div id="tooltip">
-    <div class="cluster" id="tt-cluster"></div>
-    <div class="title" id="tt-title"></div>
-    <div class="date" id="tt-date" style="font-size: 0.75rem; color: #888; margin-top: 4px; font-weight: 500;"></div>
-    <div style="font-size: 0.7rem; color: #666; margin-top: 8px; border-top: 1px solid #444; padding-top: 6px;">
-      Double-click to fly here
-    </div>
-  </div>
+      <button id="btn-clear-data" class="danger-btn" type="button">Clear Memory</button>
+    </aside>
 
-  <div id="galaxy-info-pill" class="galaxy-info-pill hidden" aria-live="polite"> 
-    <div class="pill-tooltip">
-      <div class="pill-tooltip-header">Galaxy Telemetry</div>
-      <div class="pill-tooltip-row">
+    <!-- Telemetry Info Pill -->
+    <footer id="galaxy-info-pill" class="galaxy-info-pill hidden" aria-live="polite"> 
+      <div class="pill-tooltip">
+        <div class="pill-tooltip-header">Galaxy Telemetry</div>
+        <div class="pill-tooltip-row">
+          <span class="pill-dot dot-white"></span>
+          <span class="pill-tooltip-label">Nodes:</span>
+          <span class="pill-tooltip-desc">Rendered history entries</span>
+        </div>
+        <div class="pill-tooltip-row">
+          <span class="pill-dot dot-teal"></span>
+          <span class="pill-tooltip-label">Clusters:</span>
+          <span class="pill-tooltip-desc">Distinct topic groupings</span>
+        </div>
+        <div class="pill-tooltip-row">
+          <span class="pill-dot dot-pink"></span>
+          <span class="pill-tooltip-label">Fidelity:</span>
+          <span class="pill-tooltip-desc">3D semantic accuracy score</span>
+        </div>
+      </div>
+      <div class="pill-stat pill-nodes">
         <span class="pill-dot dot-white"></span>
-        <span class="pill-tooltip-label">Nodes:</span>
-        <span class="pill-tooltip-desc">Rendered history entries</span>
+        <span class="pill-label">Nodes</span>
+        <span class="pill-value" id="pill-nodes-val">--</span>
       </div>
-      <div class="pill-tooltip-row">
+      <div class="pill-divider"></div>
+      <div class="pill-stat pill-clusters">
         <span class="pill-dot dot-teal"></span>
-        <span class="pill-tooltip-label">Clusters:</span>
-        <span class="pill-tooltip-desc">Distinct topic groupings</span>
+        <span class="pill-label">Clusters</span>
+        <span class="pill-value" id="pill-clusters-val">--</span>
       </div>
-      <div class="pill-tooltip-row">
+      <div class="pill-divider"></div>
+      <div class="pill-stat pill-fidelity">
         <span class="pill-dot dot-pink"></span>
-        <span class="pill-tooltip-label">Fidelity:</span>
-        <span class="pill-tooltip-desc">3D semantic accuracy score</span>
+        <span class="pill-label">Fidelity</span>
+        <span class="pill-value" id="pill-fidelity-val">--%</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Layer 2: Modals & Tooltips Layer -->
+  <div id="modal-layer">
+    <!-- About Modal -->
+    <dialog id="about-modal" class="glass-modal hidden" aria-label="About Trace">
+      <div class="glass-modal-header">
+        <div>
+          <div class="modal-kicker">Additional Information</div>
+        </div>
+      </div>
+      <div id="about-modal-content" class="modal-body markdown-body"></div>
+    </dialog>
+
+    <!-- Quick Start Modal -->
+    <dialog id="quickstart-modal" class="glass-modal hidden" aria-label="Quick Start">
+      <div class="glass-modal-header">
+        <div>
+          <div class="modal-kicker mb-14">Quick Start</div>
+          <h2 style="color: white;">Navigating Trace</h2>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-copy">Your browsing history has been successfully mapped into a 3D semantic galaxy. Here is how to
+          move around:</p>
+
+        <div class="controls-grid">
+          <ul>
+            <li><strong>Left-Click + Drag:</strong> Rotate the camera</li>
+            <li><strong>Right-Click + Drag:</strong> Move the camera</li>
+            <li><strong>Scroll Wheel:</strong> Zoom in and out</li>
+            <li><strong>Double-Click Node:</strong> Fly to a specific node</li>
+            <li><strong>Cmd/Ctrl + Click:</strong> Open the link in a new tab</li>
+          </ul>
+        </div>
+
+        <h3 class="quickstart-subheading">The Command Center</h3>
+        <ul class="quickstart-list">
+          <li><strong>Settings:</strong> Tune the galaxy's shape and aesthetics.</li>
+          <li><strong>Data:</strong> Manage your active session or upload a new file.</li>
+          <li><strong>Info:</strong> Learn more about the parameters and read how this was made.</li>
+        </ul>
+
+        <p class="modal-copy modal-footer-copy">
+          <em>You can reopen this guide at any time by clicking the Trace logo in the top-right corner.</em>
+        </p>
+      </div>
+    </dialog>
+
+    <!-- History Help Modal -->
+    <dialog id="history-modal" class="glass-modal hidden" aria-label="Data Collection Guide">
+      <div class="glass-modal-header">
+        <div>
+          <div class="modal-kicker mb-14">Data Collection</div>
+          <h2>Google Takeout</h2>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-copy">Trace requires a local copy of your browsing history. You can securely download this
+          directly from Google using their Takeout tool.</p>
+
+        <div class="controls-grid">
+          <ul>
+            <li><strong>1:</strong> Go to <a href="https://takeout.google.com/"
+                class="modal-link" target="_blank" rel="noopener noreferrer">Google Takeout</a></li>
+            <li><strong>2:</strong> Click <b>"Deselect all"</b>.</li>
+            <li><strong>3:</strong> Scroll down and select <b>Chrome</b>.</li>
+            <li><strong>4:</strong> Click <b>"All Chrome data included"</b>, deselect
+              everything except <b>"History"</b>, and click OK.</li>
+            <li><strong>5:</strong> Scroll to the bottom and click <b>"Next Step"</b>.</li>
+            <li><strong>6:</strong> Choose your preferred export settings and click
+              <b>"Export"</b>.</li>
+            <li><strong>7:</strong> Extract the downloaded <code>.zip</code> file and locate the
+              <code>History.json</code> file. Upload that file to the Trace dashboard.</li>
+          </ul>
+        </div>
+
+        <p class="modal-copy modal-footer-copy">
+          <em>You can reopen this guide at any time by opening the data menu and clicking the
+            <button class="help-icon-btn" disabled type="button">?</button>
+            symbol
+          </em>
+        </p>
+      </div>
+    </dialog>
+
+    <!-- Center Upload Prompt -->
+    <div id="upload-prompt" class="centered-prompt">
+      <div class="prompt-content">
+        <h2>Trace Your Digital Footprint</h2>
+        <p>Upload your Chrome <code>History.json</code> to generate an interactive, 3D semantic map of your browsing
+          habits
+          <button id="history-toggle-link" class="help-icon-btn" aria-label="How to get History.json" type="button">?</button>
+        </p>
+
+        <div class="privacy-badge">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>100% Private. Processed locally in your browser RAM.</span>
+        </div>
+
+        <label id="premium-upload-label" for="file-upload" class="premium-upload-btn">
+          Select Data File
+        </label>
+        <input type="file" id="file-upload" accept=".json" />
+        <label class="upload-notice">* Loading may take a while(up to 5 minutes)</label>
       </div>
     </div>
-    <div class="pill-stat pill-nodes">
-      <span class="pill-dot dot-white"></span>
-      <span class="pill-label">Nodes</span>
-      <span class="pill-value" id="pill-nodes-val">--</span>
-    </div>
-    <div class="pill-divider"></div>
-    <div class="pill-stat pill-clusters">
-      <span class="pill-dot dot-teal"></span>
-      <span class="pill-label">Clusters</span>
-      <span class="pill-value" id="pill-clusters-val">--</span>
-    </div>
-    <div class="pill-divider"></div>
-    <div class="pill-stat pill-fidelity">
-      <span class="pill-dot dot-pink"></span>
-      <span class="pill-label">Fidelity</span>
-      <span class="pill-value" id="pill-fidelity-val">--%</span>
+
+    <!-- Node Tooltip -->
+    <div id="tooltip">
+      <div class="cluster" id="tt-cluster"></div>
+      <div class="title" id="tt-title"></div>
+      <div class="date" id="tt-date"></div>
+      <div class="tooltip-action">
+        Double-click to fly here
+      </div>
     </div>
   </div>
 
