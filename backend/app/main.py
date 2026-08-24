@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 from app.pipeline import run_dbscan, run_umap_dbscan
 from app.history_nlp import generate_embeddings, load_and_clean_chrome_history
+from app.measure import measure_trustworthiness
 import gc
 
 async def clean_expired_sessions():
@@ -93,12 +94,13 @@ async def upload_history(request: Request):
     }
     
     nodes, coords_3d = run_umap_dbscan(df, embeddings, 1500, 15, 0.1, -1, 0.3, 3)
+    score = measure_trustworthiness(embeddings, coords_3d, 1500)
     
     SESSION_CACHE[session_id]["coords_3d"] = coords_3d
     SESSION_CACHE[session_id]["timestamp"] = datetime.now()
     gc.collect()
 
-    return {"session_id": session_id, "nodes": nodes}
+    return {"session_id": session_id, "nodes": nodes, "quality_score": score}
 
 
 @app.post("/api/recalculate")
@@ -131,6 +133,8 @@ async def recalculate_galaxy(
                 eps=eps,
                 min_samples=min_samples
             )
+
+            score = measure_trustworthiness(cached_data["embeddings"], coords_3d, max_items)
             
             SESSION_CACHE[session_id]["coords_3d"] = coords_3d
             gc.collect()
@@ -138,7 +142,8 @@ async def recalculate_galaxy(
             return {
                 "status": "success",
                 "total_nodes": len(processed_data),
-                "nodes": processed_data
+                "nodes": processed_data,
+                "quality_score" : score
             }
         
             

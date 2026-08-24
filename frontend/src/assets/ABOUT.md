@@ -30,6 +30,20 @@ These sliders control how the colors and groupings are calculated.
 
 ---
 
+## Galaxy Telemetry & Fidelity Score
+When a galaxy is loaded, the telemetry pill in the bottom-right corner provides three live indicators:
+
+* <strong style="color: #ffffff;">Nodes:</strong> The total number of browsing history entries currently rendered in 3D space.
+* <strong style="color: #00f5d4;">Clusters:</strong> The number of distinct topic groups discovered by DBSCAN clustering (excluding isolated noise points).
+* <strong style="color: #ff477e;">Fidelity:</strong> The mathematical accuracy score of the 3D projection.
+
+### What is the Fidelity Score?
+When Trace compresses 384-dimensional semantic language embeddings down into 3D space, some geometric distortion is inevitable. The **Fidelity** score (computed using manifold trustworthiness) measures how faithfully the 3D coordinates preserve your true browsing relationships.
+
+A high score (typically above 90%) ensures that pages appearing close to one another in the galaxy truly share the same topic, rather than being placed together as an artifact of compression. When you fine-tune parameters like Topic Broadness or Repulsion, Trace recalculates this score so you can see how your changes impact map accuracy.
+
+---
+
 ## System Architecture & Data Pipeline
 Transforming a raw Chrome History file into a real-time interactive galaxy requires a robust full-stack pipeline capable of handling heavy matrix math and high-dimensional clustering.
 
@@ -38,8 +52,9 @@ Transforming a raw Chrome History file into a real-time interactive galaxy requi
 3. **Semantic Embedding:** The FastAPI backend parses the history and utilizes HuggingFace Transformers to convert the page titles into high-dimensional vector embeddings, capturing the "meaning" of each webpage. *(Note: Trace calculates semantic relationships purely from the page titles, rather than scraping or reading the actual content of the websites)*
 4. **Dimensionality Reduction:** The vectors are fed into a UMAP engine, compressing the high-dimensional data down into `float32` 3D Cartesian coordinates (x, y, z) while preserving local and global data structure.
 5. **Semantic Clustering:** The coordinates are processed by DBSCAN to group similar nodes into color-coded neighborhoods and flag unrelated points as noise.
-6. **Client Rendering:** The math is sent back to the browser, where Three.js mounts the points into a 3D scene using custom WebGL fragment and vertex shaders to generate performant, bloom-like neon nodes.
-7. **Data Storage & Caching:** To eliminate redundant calculations and ensure rapid load times, Trace utilizes a distributed caching strategy. The heavy mathematical data (parsed history, text embeddings, and 3D coordinates) is temporarily cached in the backend server's RAM. On the client side, UI preferences are saved in the browser's `localStorage`, while the fully rendered galaxy is stored in `IndexedDB` to persist seamlessly across page refreshes.
+6. **Projection Quality & Fidelity Measurement:** The backend evaluates manifold trustworthiness between the high-dimensional embeddings and the 3D projection to compute the real-time accuracy score.
+7. **Client Rendering:** The math is sent back to the browser, where Three.js mounts the points into a 3D scene using custom WebGL fragment and vertex shaders to generate performant, bloom-like neon nodes.
+8. **Data Storage & Caching:** To eliminate redundant calculations and ensure rapid load times, Trace utilizes a distributed caching strategy. The heavy mathematical data (parsed history, text embeddings, and 3D coordinates) is temporarily cached in the backend server's RAM. On the client side, UI preferences are saved in the browser's `localStorage`, while the fully rendered galaxy is stored in `IndexedDB` to persist seamlessly across page refreshes.
 
 ---
 

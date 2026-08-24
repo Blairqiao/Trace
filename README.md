@@ -80,6 +80,22 @@ Because everyone's browsing history is completely unique in density and scope, o
 * **Brightness:** Adjusts the global scene brightness.
 * **Galaxy Scale:** Controls the visual scale and spread of the galaxy without altering the underlying mathematical relationships.
 
+### Galaxy Telemetry & Fidelity Metric
+
+Whenever a galaxy is rendered, a small info panel in the bottom-right corner displays real-time performance and structural metrics:
+
+* **Nodes (White):** Total number of search and browsing history entries currently embedded and mapped in 3D Cartesian coordinates.
+* **Clusters (Teal):** The number of distinct semantic clusters discovered by DBSCAN (points deemed isolated noise are assigned to cluster `-1` and excluded from this count).
+* **Fidelity (Pink):** The quantitative accuracy score (0%–100%) of the low-dimensional projection.
+
+#### Measuring Dimensionality Reduction Trustworthiness
+Projecting high-dimensional text embeddings ($\mathbb{R}^{384}$ from Sentence Transformers) onto a 3D manifold ($\mathbb{R}^3$) inevitably introduces geometric distortion. Trace measures the preservation of local neighborhoods using **Trustworthiness** ($k=10$ nearest neighbors with cosine distance). To reduce computational cost for large node counts, we randomly sample 5000 nodes to approximate the metric. If the galaxy has less than 5000 nodes, we compute the metric using all available nodes.
+
+**Mathematical Implications:**
+* **False Neighbor Penalization:** The metric penalizes false positives—nodes that appear adjacent in the 3D galaxy despite lacking genuine semantic relatedness in the original embedding space.
+* **Score Interpretation:** A Fidelity score above 90% indicates strong topological preservation where spatial proximity faithfully reflects semantic affinity.
+* **Live Recalculation:** Adjusting UMAP hyperparameters (**Topic Broadness** / $n\text{\_neighbors}$ and **Repulsion Factor** / $\min\text{\_dist}$) triggers a live recalculation of coordinates and updates the Fidelity score dynamically.
+
 ### Examples
 
 

@@ -1,13 +1,22 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background-color: #050505;
+  color: white;
+  font-family: monospace;
+}
 
-body { margin: 0; overflow: hidden; background-color: #050505; color: white; font-family: monospace; }
-#canvas-container { width: 100vw; height: 100vh; }
+#canvas-container {
+  width: 100vw;
+  height: 100vh;
+}
 
 /* Data Panel */
 .panel-header {
   display: flex;
   align-items: center;
-  gap: 10px; 
-  margin-bottom: 16px; 
+  gap: 10px;
+  margin-bottom: 16px;
 }
 
 /* The Perfect Circle Button */
@@ -16,33 +25,33 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   height: 14px;
   border-radius: 50%;
   margin-top: 0px;
-  
+
   display: inline-flex;
   vertical-align: middle;
   justify-content: center;
   align-items: center;
-  
+
   font-size: 8px;
   font-weight: bold;
   font-family: monospace;
   opacity: 0.8;
   background: transparent;
   border: 1px solid #666;
-  
+
   cursor: pointer;
   padding: 0;
   transition: all 0.2s ease;
-  
+
   transform: scale(1);
   transform-origin: center;
-  will-change: transform; 
+  will-change: transform;
 }
 
 .help-icon-btn:hover {
   opacity: 1;
   border-color: #fff;
   background: transparent;
-  transform: scale(1.1); 
+  transform: scale(1.1);
 }
 
 .help-icon-btn.open {
@@ -59,9 +68,9 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
 }
 
 .help-icon-btn:disabled {
-  cursor: not-allowed; 
+  cursor: not-allowed;
   pointer-events: none;
-  background: transparent; 
+  background: transparent;
 }
 
 #data-toggle {
@@ -70,7 +79,7 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   left: 60px;
   cursor: pointer;
   opacity: 0.2;
-  transition: opacity 0.2s ease, transform 0.2s ease;        
+  transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 1000;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -180,7 +189,7 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
 }
 
 .status-dot.active {
-  background: #00f5d4; 
+  background: #00f5d4;
   box-shadow: 0 0 8px #00f5d4;
 }
 
@@ -217,7 +226,7 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   height: 100vh;
   background: rgba(10, 10, 15, 0.17);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
-  transform: translateX(-100%); 
+  transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 999;
   padding: 60px 20px 20px 20px;
@@ -227,8 +236,10 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
 }
 
 #data-panel.open {
-  transform: translateX(0); /* Slide in */
+  transform: translateX(0);
+  /* Slide in */
 }
+
 /* The Settings Panel */
 #settings-toggle {
   position: fixed;
@@ -236,7 +247,7 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   left: 20px;
   cursor: pointer;
   opacity: 0.2;
-  transition: opacity 0.2s ease, transform 0.2s ease;        
+  transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 1000;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -250,7 +261,7 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   left: 20px;
   cursor: pointer;
   opacity: 1;
-  transition: opacity 0.2s ease, transform 0.2s ease;       
+  transition: opacity 0.2s ease, transform 0.2s ease;
   z-index: 1000;
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
@@ -276,7 +287,7 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
   height: 100vh;
   background: rgba(10, 10, 15, 0.17);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
-  transform: translateX(-100%); 
+  transform: translateX(-100%);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 999;
   color: white;
@@ -285,7 +296,8 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
 
 
 #settings-panel.open {
-  transform: translateX(0); /* Slide in */
+  transform: translateX(0);
+  /* Slide in */
 }
 
 .settings-content {
@@ -305,49 +317,127 @@ body { margin: 0; overflow: hidden; background-color: #050505; color: white; fon
 }
 
 /* The Parameter UI */
-.control-group { margin-bottom: 12px; margin-right: 10px; }
-label { display: block; font-size: 0.8rem; color: #aaa; margin-bottom: 4px; }
-input { width: 100%; background: #5656567e; border: 1px solid #444; color: white; padding: 4px; border-radius: 4px; }
+.control-group {
+  margin-bottom: 12px;
+  margin-right: 10px;
+}
+
+label {
+  display: block;
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 4px;
+}
+
+input {
+  width: 100%;
+  background: #5656567e;
+  border: 1px solid #444;
+  color: white;
+  padding: 4px;
+  border-radius: 4px;
+}
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-input[type="number"] { outline: none; }
+
+input[type="number"] {
+  outline: none;
+}
 
 /* Minimal range input styling (thin track, small circular thumb) */
-input[type="range"] { -webkit-appearance: none; appearance: none; width: 100%; background: transparent; height: 20px; padding: 0; margin: 0; cursor: pointer; border: none; }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  background: transparent;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  border: none;
+}
 
 /* WebKit track/thumb */
 input[type="range"]::-webkit-slider-runnable-track {
-  height: 6px; border-radius: 999px; background: #5656567e; border: none;
+  height: 6px;
+  border-radius: 999px;
+  background: #5656567e;
+  border: none;
 }
+
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 12px; height: 12px; margin-top: -3px; border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95); box-shadow: none; transition: transform 0.12s ease;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: none;
+  transition: transform 0.12s ease;
 }
-input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.12); }
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
 
 /* Firefox track/thumb */
-input[type="range"]::-moz-range-track { height: 6px; border-radius: 999px; background: #5656567e; }
-input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,0.95); }
+input[type="range"]::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #5656567e;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+}
 
 /* IE/Edge */
-input[type="range"]::-ms-track { height: 6px; background: transparent; border-color: transparent; color: transparent; }
-input[type="range"]::-ms-thumb { width: 12px; height: 12px; background: rgba(255,255,255,0.95); border-radius: 50%; }
+input[type="range"]::-ms-track {
+  height: 6px;
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
 
-input[type="range"]:focus { outline: none; }
-button { 
-  width: 100%; 
-  background: #5656567e; color: white; border: none; 
-  padding: 8px; margin-top: 10px; border-radius: 4px; cursor: pointer; font-weight: bold;
+input[type="range"]::-ms-thumb {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+button {
+  width: 100%;
+  background: #5656567e;
+  color: white;
+  border: none;
+  padding: 8px;
+  margin-top: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
   transition: all 0.2s ease;
 }
-button:hover { background: #73737381; }
+
+button:hover {
+  background: #73737381;
+}
 
 button:disabled {
-  background: #5656564d; color: #aaa; cursor: pointer;
+  background: #5656564d;
+  color: #aaa;
+  cursor: pointer;
 }
 
 .checkbox-group {
@@ -356,9 +446,10 @@ button:disabled {
   justify-content: space-between;
   vertical-align: middle;
 }
+
 input[type="checkbox"] {
-  appearance: none;         
-  -webkit-appearance: none; 
+  appearance: none;
+  -webkit-appearance: none;
   width: 18px;
   height: 18px;
   background-color: rgba(0, 0, 0, 0.4);
@@ -369,22 +460,25 @@ input[type="checkbox"] {
   transition: all 0.2s ease;
   margin-top: -2px;
 }
+
 input[type="checkbox"]:hover {
   border-color: rgba(255, 255, 255, 0.4);
   background-color: rgba(255, 255, 255, 0.05);
 }
+
 input[type="checkbox"]:checked {
   background-color: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.6);
 }
+
 input[type="checkbox"]:checked::after {
   content: "";
   position: absolute;
-  left: 5px;             
+  left: 5px;
   top: 1px;
   width: 4px;
   height: 9px;
-  border: solid white;  
+  border: solid white;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -392,21 +486,26 @@ input[type="checkbox"]:checked::after {
 .slider-wrapper {
   position: relative;
   width: 100%;
-  margin-top: 8px; /* Gives the bubble room to float above the slider */
+  margin-top: 8px;
+  /* Gives the bubble room to float above the slider */
 }
 
 .slider-tooltip {
   position: absolute;
-  top: -30px; /* Hovers above the slider */
+  top: -30px;
+  /* Hovers above the slider */
   left: 50%;
-  transform: translateX(-50%); /* Keeps the center of the bubble aligned to the thumb */
+  transform: translateX(-50%);
+  /* Keeps the center of the bubble aligned to the thumb */
   background: rgba(255, 255, 255, 0.9);
-  color: #050505; /* Dark text for contrast */
+  color: #050505;
+  /* Dark text for contrast */
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: bold;
-  pointer-events: none; /* Prevents the tooltip from blocking mouse clicks */
+  pointer-events: none;
+  /* Prevents the tooltip from blocking mouse clicks */
   opacity: 0;
   transition: opacity 0.2s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
@@ -427,19 +526,39 @@ input[type="checkbox"]:checked::after {
 
 /* Show the bubble when hovering OR actively clicking/dragging */
 .slider-wrapper:hover .slider-tooltip,
-.slider-wrapper input[type="range"]:active + .slider-tooltip {
+.slider-wrapper input[type="range"]:active+.slider-tooltip {
   opacity: 1;
 }
 
 /* The Tooltip */
 #tooltip {
-  position: absolute; top: 0; left: 0; background: rgba(20, 20, 20, 0.9);
-  border: 1px solid #444; padding: 10px 15px; border-radius: 6px;
-  pointer-events: none; opacity: 0; transition: opacity 0.2s;
-  transform: translate(15px, 15px); max-width: 300px; z-index: 10;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid #444;
+  padding: 10px 15px;
+  border-radius: 6px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  transform: translate(15px, 15px);
+  max-width: 300px;
+  z-index: 10;
 }
-#tooltip .cluster { font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
-#tooltip .title { font-weight: bold; font-size: 1rem; overflow-wrap: anywhere; word-break: normal;}
+
+#tooltip .cluster {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-bottom: 5px;
+}
+
+#tooltip .title {
+  font-weight: bold;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
 
 .centered-prompt {
   position: absolute;
@@ -452,12 +571,12 @@ input[type="checkbox"]:checked::after {
   z-index: 100;
   padding: 40px;
   display: none;
-  
+
   /* Frosted Glass Look */
   background: rgba(20, 20, 20, 0.756);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px) saturate(140%);
 
   /* Subtle fade-in */
@@ -483,7 +602,7 @@ input[type="checkbox"]:checked::after {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(6px) saturate(140%);
   opacity: 1;
-  transition: opacity 0.2s ease-out; 
+  transition: opacity 0.2s ease-out;
 }
 
 .glass-modal.hidden {
@@ -618,14 +737,15 @@ code {
 .prompt-content h2 {
   margin: 0 0 10px 0;
   font-size: 24px;
-  background: linear-gradient(
-    90deg, 
-    #666666 0%,     /* Slate Gray */
-    #a3a3a3 25%,    /* Light Silver */
-    #ffffff 50%,    /* Pure White Hotspot */
-    #a3a3a3 75%, 
-    #666666 100%
-  );
+  background: linear-gradient(90deg,
+      #666666 0%,
+      /* Slate Gray */
+      #a3a3a3 25%,
+      /* Light Silver */
+      #ffffff 50%,
+      /* Pure White Hotspot */
+      #a3a3a3 75%,
+      #666666 100%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
@@ -640,7 +760,7 @@ code {
 }
 
 .prompt-content code {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   padding: 2px 6px;
   border-radius: 4px;
   color: #fff;
@@ -653,7 +773,7 @@ code {
   justify-content: center;
   gap: 8px;
   font-size: 12px;
-  color: #aaa; 
+  color: #aaa;
   background: rgba(255, 255, 255, 0.1);
   padding: 8px 16px;
   border-radius: 20px;
@@ -663,7 +783,7 @@ code {
 
 /* Hide the ugly default file input */
 #file-upload {
-  display: none; 
+  display: none;
 }
 
 /* Style the label to look like a premium button */
@@ -681,25 +801,219 @@ code {
 
 .premium-upload-btn:hover {
   background: rgba(218, 218, 218, 0.2);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .premium-upload-btn.disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  pointer-events: none; 
+  pointer-events: none;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translate(-50%, -45%); }
-  to { opacity: 1; transform: translate(-50%, -50%); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
 
 @keyframes shimmer {
   from {
     background-position: 200% center;
   }
+
   to {
     background-position: 0% center;
+  }
+}
+
+/* Galaxy Telemetry Info Pill */
+.galaxy-info-pill {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 18px;
+  background: rgba(20, 20, 20, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px) saturate(160%);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  font-family: monospace;
+  user-select: none;
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.galaxy-info-pill:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.galaxy-info-pill.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.96);
+}
+
+.pill-stat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pill-label {
+  font-size: 0.72rem;
+  color: #8c8c96;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+.pill-value {
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Trace Logo Palette */
+.dot-white {
+  background: #ffffff;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.85);
+}
+
+#pill-nodes-val {
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+}
+
+.dot-teal {
+  background: #00f5d4;
+  box-shadow: 0 0 6px #00f5d4;
+}
+
+#pill-clusters-val {
+  color: #00f5d4;
+  text-shadow: 0 0 10px rgba(0, 245, 212, 0.4);
+}
+
+.dot-pink {
+  background: #ff477e;
+  box-shadow: 0 0 6px #ff477e;
+}
+
+#pill-fidelity-val {
+  color: #ff477e;
+  text-shadow: 0 0 10px rgba(255, 71, 126, 0.4);
+}
+
+.pill-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* Pill Telemetry Tooltip */
+.pill-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  width: 270px;
+  background: rgba(18, 18, 22, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px 14px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity 0.2s cubic-bezier(0.25, 1, 0.5, 1), transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  z-index: 1000;
+  cursor: default;
+}
+
+.galaxy-info-pill:hover .pill-tooltip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.pill-tooltip-header {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.pill-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.73rem;
+  line-height: 1.35;
+}
+
+.pill-tooltip-row:last-child {
+  margin-bottom: 0;
+}
+
+.pill-tooltip-label {
+  font-weight: 600;
+  color: #d0d0d8;
+}
+
+.pill-tooltip-desc {
+  color: #8c8c96;
+}
+
+@media (max-width: 600px) {
+  .galaxy-info-pill {
+    bottom: 16px;
+    right: 16px;
+    gap: 8px;
+    padding: 6px 12px;
+  }
+
+  .pill-label {
+    font-size: 0.65rem;
+  }
+
+  .pill-value {
+    font-size: 0.75rem;
+  }
+
+  .pill-tooltip {
+    width: 230px;
+    font-size: 0.68rem;
   }
 }

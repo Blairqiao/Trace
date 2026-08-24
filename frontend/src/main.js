@@ -5,13 +5,15 @@ import demoNodes from './assets/demo_galaxy.json';
 import { marked } from 'marked';
 import aboutMarkdown from './assets/ABOUT.md?raw';
 
-// --- Scene Setup ---
+// --- Setup ---
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const container = document.getElementById('canvas-container');
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x050505, 0.05);
 
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 0, 35); 
+camera.position.set(0, 0, 35);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -42,15 +44,15 @@ function saveCameraState() {
 
 function loadCameraState() {
   const saved = localStorage.getItem('galaxyCameraState');
-  if (!saved) return; 
+  if (!saved) return;
 
   const state = JSON.parse(saved);
-  
+
   camera.position.set(state.posX, state.posY, state.posZ);
-  
+
   controls.target.set(state.tarX, state.tarY, state.tarZ);
-  
-  controls.update(); 
+
+  controls.update();
 }
 
 // --- Globals & State Mechanics ---
@@ -58,7 +60,8 @@ let pointCloud = null;
 let currentSessionId = null;
 let isDemoMode = false;
 let node_count = 1500;
-let nodeData = []; 
+let nodeData = [];
+let currentFidelity = null;
 const colors = [
   0xff0a54, 0x00f5d4, 0xffca3a, 0x3377aa, 0x9b5de5,
   0x448855, 0xff9f1c, 0x664488, 0x8ac926, 0x00bbf9,
@@ -89,21 +92,21 @@ const resetIdleTimer = () => {
 };
 
 function formatChromeTimestamp(timeUsec) {
-    if (!timeUsec || timeUsec === 0) return "Unknown Date";
+  if (!timeUsec || timeUsec === 0) return "Unknown Date";
 
-    const chromeMs = timeUsec / 1000;
-    
-    const unixMs = chromeMs;
-    
-    const date = new Date(unixMs);
-    
-    return date.toLocaleString(undefined, {
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric', 
-        hour: 'numeric', 
-        minute: '2-digit'
-    });
+  const chromeMs = timeUsec / 1000;
+
+  const unixMs = chromeMs;
+
+  const date = new Date(unixMs);
+
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit'
+  });
 }
 
 function setModalVisibility(modalId, isVisible) {
@@ -116,6 +119,52 @@ function setToggleActive(toggleId, isActive) {
   const toggle = document.getElementById(toggleId);
   if (!toggle) return;
   toggle.classList.toggle('open', isActive);
+}
+
+function updateGalaxyInfoPill(nodes = nodeData, fidelity = currentFidelity) {
+  const pill = document.getElementById('galaxy-info-pill');
+  if (!pill) return;
+
+  if (isDemoMode || !nodes || nodes.length === 0) {
+    pill.classList.add('hidden');
+    return;
+  }
+
+  const nodesValEl = document.getElementById('pill-nodes-val');
+  const clustersValEl = document.getElementById('pill-clusters-val');
+  const fidelityValEl = document.getElementById('pill-fidelity-val');
+
+  if (nodesValEl) {
+    nodesValEl.textContent = nodes.length.toLocaleString();
+  }
+
+  if (clustersValEl) {
+    const clusterIds = new Set();
+    for (let i = 0; i < nodes.length; i++) {
+      const c = nodes[i].cluster;
+      if (c !== undefined && c !== null && c >= 0) {
+        clusterIds.add(c);
+      }
+    }
+    clustersValEl.textContent = clusterIds.size.toLocaleString();
+  }
+
+  if (fidelityValEl) {
+    if (fidelity !== null && fidelity !== undefined && !isNaN(Number(fidelity))) {
+      fidelityValEl.textContent = `${Number(fidelity).toFixed(1)}%`;
+    } else {
+      fidelityValEl.textContent = '--%';
+    }
+  }
+
+  pill.classList.remove('hidden');
+}
+
+function hideGalaxyInfoPill() {
+  const pill = document.getElementById('galaxy-info-pill');
+  if (pill) {
+    pill.classList.add('hidden');
+  }
 }
 
 function closeAllOverlays() {
@@ -173,7 +222,7 @@ async function maybeShowQuickStartModal() {
 // Settings Panel
 document.getElementById('settings-toggle').addEventListener('click', () => {
   document.getElementById('data-panel').classList.remove('open');
-  document.getElementById('data-toggle').classList.remove('open') ;
+  document.getElementById('data-toggle').classList.remove('open');
   document.getElementById('about-toggle').classList.remove('open');
   document.getElementById('quickstart-toggle').classList.remove('open');
   setModalVisibility('about-modal', false);
@@ -281,13 +330,13 @@ function saveUISettings() {
     spread: document.getElementById('val-spread').value,
     autoRotate: document.getElementById('toggle-sleep-rotate').checked
   };
-  
+
   localStorage.setItem('galaxyVisualSettings', JSON.stringify(settings));
 }
 
 function loadUISettings() {
   const saved = localStorage.getItem('galaxyVisualSettings');
-  if (!saved) return; 
+  if (!saved) return;
 
   const settings = JSON.parse(saved);
   document.getElementById('val-limit').value = settings.max_items;
@@ -308,7 +357,7 @@ function loadUISettings() {
   spreadFactor = parseFloat(settings.spread);
   allowAutoRotate = settings.autoRotate;
 
-  updateAllTooltips(); 
+  updateAllTooltips();
 }
 
 function updateAllTooltips() {
@@ -341,21 +390,21 @@ sliderWrappers.forEach(wrapper => {
 
     const percent = (val - min) / (max - min);
 
-    const thumbWidth = 12; 
+    const thumbWidth = 12;
     const offset = (0.5 - percent) * thumbWidth;
 
     tooltip.style.left = `calc(${percent * 100}% + ${offset}px)`;
   };
 
   slider.addEventListener('input', updateTooltip);
-  
+
   updateTooltip();
 });
 
 // Data Panel
 document.getElementById('data-toggle').addEventListener('click', () => {
   document.getElementById('settings-panel').classList.remove('open');
-  document.getElementById('settings-toggle').classList.remove('open') ;
+  document.getElementById('settings-toggle').classList.remove('open');
   document.getElementById('about-toggle').classList.remove('open');
   document.getElementById('quickstart-toggle').classList.remove('open');
   setModalVisibility('about-modal', false);
@@ -454,21 +503,23 @@ const fragmentShader = `
 // Build Demo Galaxy
 function buildDemoGalaxy() {
   isDemoMode = true;
-  
+  currentFidelity = 96.2;
+
   // Add dummy text back in just to satisfy the renderer's requirements
   demoNodes.forEach((node, i) => {
     node.id = i;
-    node.title = "Encrypted Node"; 
+    node.title = "Encrypted Node";
     node.url = "";
   });
 
   buildThreeJsScene(demoNodes);
+  updateGalaxyInfoPill(demoNodes, currentFidelity);
 
   controls.enableZoom = false;
   controls.enablePan = false;
   controls.enableRotate = false;
   controls.autoRotate = true;
-  
+
   centerCamera(0.75);
 
 }
@@ -476,10 +527,12 @@ function buildDemoGalaxy() {
 async function initGalaxy() {
   const savedGalaxy = await loadLocalData('userGalaxy');
   const savedSessionId = await loadLocalData('userSessionId');
+  const savedFidelity = await loadLocalData('userFidelity');
   const savedFileName = localStorage.getItem('galaxyFileName');
-  
+
   if (savedGalaxy) {
     currentSessionId = savedSessionId;
+    currentFidelity = savedFidelity ?? null;
     const hasSeenQuickStart = await loadLocalData(QUICKSTART_FLAG_KEY);
     if (!hasSeenQuickStart) {
       await markQuickStartSeen();
@@ -487,7 +540,8 @@ async function initGalaxy() {
     document.getElementById('upload-prompt').style.display = 'none';
     updateDataPanelUI(savedFileName);
     buildThreeJsScene(savedGalaxy);
-  } else {;
+    updateGalaxyInfoPill(savedGalaxy, currentFidelity);
+  } else {
     document.getElementById('upload-prompt').style.display = 'block';
     buildDemoGalaxy();
   }
@@ -497,19 +551,19 @@ async function initGalaxy() {
 // Load New Data
 async function processFileUpload(file) {
   if (!file) return;
-  
+
   const btn = document.getElementById('btn-recalculate');
   btn.disabled = true;
   const emptyStateLabel = document.querySelector('label[for="file-upload"]');
   const emptyStateInput = document.getElementById('file-upload');
-  
+
   const sidePanelLabel = document.querySelector('label[for="data-panel-upload"]');
   const sidePanelInput = document.getElementById('data-panel-upload');
-  
+
   emptyStateLabel.textContent = "Extracting Embeddings...";
   emptyStateLabel.classList.add('disabled');
   emptyStateInput.disabled = true;
-  
+
   sidePanelLabel.textContent = "Extracting Embeddings...";
   sidePanelLabel.classList.add('disabled');
   sidePanelInput.disabled = true;
@@ -517,7 +571,7 @@ async function processFileUpload(file) {
   try {
     const fileText = await file.text();
 
-    const response = await fetch('https://api.trace-app.net/api/upload-history', {
+    const response = await fetch(`${API_BASE_URL}/api/upload-history`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: fileText,
@@ -526,14 +580,18 @@ async function processFileUpload(file) {
     if (!response.ok) throw new Error("Server rejected the upload.");
 
     const json = await response.json();
-    
+
+    currentFidelity = json.quality_score ?? null;
     await saveLocalData('userGalaxy', json.nodes);
     await saveLocalData('userSessionId', json.session_id);
-    
+    if (currentFidelity !== null) {
+      await saveLocalData('userFidelity', currentFidelity);
+    }
+
     localStorage.setItem('galaxyFileName', file.name);
-    
+
     currentSessionId = json.session_id;
-    
+
     updateDataPanelUI(file.name);
     document.getElementById('upload-prompt').style.display = 'none';
     sidePanelLabel.textContent = "Upload New History!";
@@ -543,32 +601,32 @@ async function processFileUpload(file) {
     controls.enablePan = true;
     controls.enableRotate = true;
     controls.autoRotate = allowAutoRotate;
-    
+
     if (pointCloud) {
       scene.remove(pointCloud);
       pointCloud.geometry.dispose();
       pointCloud.material.dispose();
       pointCloud = null;
     }
-    
+
     buildThreeJsScene(json.nodes);
 
     await maybeShowQuickStartModal();
 
   } catch (error) {
     console.error(error);
-    emptyStateLabel.textContent = "Upload Failed";
-    sidePanelLabel.textContent = "Upload Failed";
-    alert("Upload failed.");
+    emptyStateLabel.textContent = "The backend is currently offline";
+    sidePanelLabel.textContent = "The backend is currently offline";
+    alert("The backend is currently offline");
   } finally {
     btn.disabled = false;
-    
+
     emptyStateLabel.classList.remove('disabled');
     emptyStateInput.disabled = false;
-    
+
     sidePanelLabel.classList.remove('disabled');
     sidePanelInput.disabled = false;
-    
+
     emptyStateInput.value = '';
     sidePanelInput.value = '';
   }
@@ -585,7 +643,7 @@ document.getElementById('data-panel-upload').addEventListener('change', (e) => {
 function updateDataPanelUI(fileName) {
   const statusText = document.getElementById('current-file-name');
   const statusDot = document.querySelector('.status-dot');
-  
+
   if (fileName) {
     statusText.innerText = `Active: ${fileName}`;
     statusDot.classList.add('active');
@@ -597,9 +655,10 @@ function updateDataPanelUI(fileName) {
 
 // Clear Data
 function clearData() {
+  hideGalaxyInfoPill();
   localStorage.clear();
   indexedDB.deleteDatabase('GalaxyDB');
-  window.location.reload(); 
+  window.location.reload();
 }
 
 document.getElementById('btn-clear-data').addEventListener('click', () => {
@@ -628,21 +687,26 @@ async function recalculateGalaxy() {
     const eps = document.getElementById('val-eps').value;
     const min_samples = document.getElementById('val-samples').value;
 
-    const url = `https://api.trace-app.net/api/recalculate?session_id=${currentSessionId}&max_items=${max_items}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&seed=${seed}&eps=${eps}&min_samples=${min_samples}`;
-    
+    const url = `${API_BASE_URL}/api/recalculate?session_id=${currentSessionId}&max_items=${max_items}&n_neighbors=${n_neighbors}&min_dist=${min_dist}&seed=${seed}&eps=${eps}&min_samples=${min_samples}`;
+
     const response = await fetch(url, { method: 'POST' });
-    
+
     if (response.status === 404) {
-       alert("Server memory cleared. Please re-upload your file.");
-       return;
+      alert("Server memory cleared. Please re-upload your file.");
+      return;
     }
-    
+
     const json = await response.json();
     node_count = max_items;
-    
+    currentFidelity = json.quality_score ?? null;
+
     await saveLocalData('userGalaxy', json.nodes);
-    
+    if (currentFidelity !== null) {
+      await saveLocalData('userFidelity', currentFidelity);
+    }
+
     buildThreeJsScene(json.nodes);
+    updateGalaxyInfoPill(json.nodes, currentFidelity);
 
   } catch (error) {
     console.error(error);
@@ -657,7 +721,7 @@ document.getElementById('btn-recalculate').addEventListener('click', recalculate
 
 function buildThreeJsScene(nodes) {
   if (pointCloud && pointCloud.geometry.attributes.position.count === nodes.length) {
-    
+
     nodeData = nodes;
 
     const colorsAttr = pointCloud.geometry.attributes.customColor;
@@ -671,8 +735,8 @@ function buildThreeJsScene(nodes) {
     colorsAttr.needsUpdate = true;
     centerCamera(1.5);
     resetIdleTimer();
-    
-    return; 
+
+    return;
   }
 
   if (pointCloud) {
@@ -703,8 +767,8 @@ function buildThreeJsScene(nodes) {
     vertexShader: vertexShader,
     fragmentShader: fragmentShader,
     transparent: true,
-    depthWrite: false, 
-    blending: THREE.AdditiveBlending 
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
   });
 
   pointCloud = new THREE.Points(geometry, material);
@@ -712,7 +776,8 @@ function buildThreeJsScene(nodes) {
   scene.add(pointCloud);
 
   centerCamera(1.5);
-  
+
+  updateGalaxyInfoPill(nodeData, currentFidelity);
 
   resetIdleTimer();
 }
@@ -740,20 +805,20 @@ function centerCamera(zoomLevel) {
   const radiusX = (maxX - minX) / 2;
   const radiusY = (maxY - minY) / 2;
   const radiusZ = (maxZ - minZ) / 2;
-  const maxRadius = Math.max(radiusX, radiusY, radiusZ); 
+  const maxRadius = Math.max(radiusX, radiusY, radiusZ);
 
   const zoomDistance = maxRadius * spreadFactor * zoomLevel;
 
   centertargetControlsPos.set(centerX, centerY, centerZ);
   centertargetCameraPos.set(centerX, centerY, centerZ + zoomDistance);
-  
+
   isTransitioningCamera = true;
 }
 
 
 function debounce(func, wait) {
   let timeout;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
@@ -767,7 +832,7 @@ async function liveUpdateColors() {
   const min_samples = document.getElementById('val-samples').value;
 
   try {
-    const url = `https://api.trace-app.net/api/recluster?session_id=${currentSessionId}&max_items=${max_items}&eps=${eps}&min_samples=${min_samples}`;
+    const url = `${API_BASE_URL}/api/recluster?session_id=${currentSessionId}&max_items=${max_items}&eps=${eps}&min_samples=${min_samples}`;
 
     const response = await fetch(url);
     const json = await response.json();
@@ -776,13 +841,14 @@ async function liveUpdateColors() {
     const colorObj = new THREE.Color();
 
     json.nodes.forEach((dataPoint, i) => {
-      nodeData[i].cluster = dataPoint.cluster; 
-      
+      nodeData[i].cluster = dataPoint.cluster;
+
       colorObj.setHex(getClusterColorHex(dataPoint.cluster));
       colorsAttr.setXYZ(i, colorObj.r, colorObj.g, colorObj.b);
     });
 
     colorsAttr.needsUpdate = true;
+    updateGalaxyInfoPill(nodeData, currentFidelity);
 
   } catch (error) {
     console.error("Live Update Error:", error);
@@ -813,25 +879,25 @@ function createForcefieldTexture() {
   canvas.width = 64;
   canvas.height = 64;
   const ctx = canvas.getContext('2d');
-  
+
   // Draw a soft, filled radial gradient
   const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
   gradient.addColorStop(0, 'rgba(255, 255, 255, 1.0)');   // Solid core
   gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');  // Soft mid-glow
   gradient.addColorStop(1, 'rgba(255, 255, 255, 0.0)');   // Faded transparent edge
-  
+
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, 64, 64);
-  
+
   return new THREE.CanvasTexture(canvas);
 }
 
-const forcefieldMat = new THREE.SpriteMaterial({ 
-  map: createForcefieldTexture(), 
+const forcefieldMat = new THREE.SpriteMaterial({
+  map: createForcefieldTexture(),
   color: 0xffffff,
   transparent: true,
   opacity: 0.4,
-  blending: THREE.AdditiveBlending, 
+  blending: THREE.AdditiveBlending,
   depthWrite: false
 });
 
@@ -855,29 +921,29 @@ renderer.domElement.addEventListener('dblclick', () => {
   resetIdleTimer();
   if (hoveredId !== null) {
     const targetData = nodeData[hoveredId];
-    
+
     const finalPos = new THREE.Vector3(
-      targetData.x * spreadFactor, 
-      targetData.y * spreadFactor, 
+      targetData.x * spreadFactor,
+      targetData.y * spreadFactor,
       targetData.z * spreadFactor
     );
 
     targetControlsPos.copy(finalPos);
 
     const sightline = new THREE.Vector3().subVectors(camera.position, finalPos).normalize();
-    const currentDistance = camera.position.distanceTo(finalPos);    
+    const currentDistance = camera.position.distanceTo(finalPos);
     const parkDistance = Math.max(currentDistance * 0.1, controls.minDistance);
-    
+
     targetCameraPos.copy(finalPos).add(sightline.multiplyScalar(parkDistance));
-    
+
     isFlying = true;
     currentFlightSpeed = defaultFlightSpeed;
   } else {
     raycaster.setFromCamera(mouse, camera);
     const forwardVector = new THREE.Vector3();
     camera.getWorldDirection(forwardVector);
-    forwardVector.normalize().multiplyScalar(4 * spreadFactor); 
-    
+    forwardVector.normalize().multiplyScalar(4 * spreadFactor);
+
     targetCameraPos.copy(camera.position).add(forwardVector);
     targetControlsPos.copy(controls.target).add(forwardVector);
     isFlying = true;
@@ -892,7 +958,7 @@ renderer.domElement.addEventListener('auxclick', (event) => {
 });
 
 renderer.domElement.addEventListener('mousedown', (event) => {
-  if (event.button === 0 && (event.ctrlKey || event.metaKey) && hoveredId !== null ) {
+  if (event.button === 0 && (event.ctrlKey || event.metaKey) && hoveredId !== null) {
     window.open(nodeData[hoveredId].url, '_blank');
   }
 });
@@ -906,12 +972,12 @@ function animate() {
     currentFlightSpeed = Math.min(currentFlightSpeed + 0.005, 0.1);
     camera.position.lerp(targetCameraPos, currentFlightSpeed);
     controls.target.lerp(targetControlsPos, currentFlightSpeed);
-    
+
     if (camera.position.distanceTo(targetCameraPos) < 0.02 && controls.target.distanceTo(targetControlsPos) < 0.02) {
       camera.position.copy(targetCameraPos);
       controls.target.copy(targetControlsPos);
       isFlying = false;
-      controls.enabled = true; 
+      controls.enabled = true;
     }
   } else {
     if (isDemoMode) {
@@ -923,7 +989,7 @@ function animate() {
         controls.autoRotate = false;
       }
     }
-    
+
   }
 
   if (isTransitioningCamera) {
@@ -938,14 +1004,14 @@ function animate() {
   controls.update();
 
   if (pointCloud) {
-    
+
     const positions = pointCloud.geometry.attributes.position.array;
     let geometryNeedsUpdate = false;
     let isAnimating = false;
 
     for (let i = 0; i < nodeData.length; i++) {
       const idx = i * 3;
-      
+
       const targetX = nodeData[i].x;
       const targetY = nodeData[i].y;
       const targetZ = nodeData[i].z;
@@ -989,13 +1055,13 @@ function animate() {
     } else {
       raycaster.setFromCamera(mouse, camera);
       const intersects = raycaster.intersectObject(pointCloud);
-      
+
       if (intersects.length > 0) {
         const targetIndex = intersects[0].index;
         if (hoveredId !== targetIndex) {
           hoveredId = targetIndex;
           const ud = nodeData[targetIndex];
-          
+
           document.getElementById('tt-cluster').innerText = ud.cluster === -1 ? 'Isolated Search' : `Cluster ${ud.cluster}`;
           document.getElementById('tt-title').innerText = ud.title;
           document.getElementById('tt-date').innerText = formatChromeTimestamp(ud.timestamp);
@@ -1032,11 +1098,11 @@ window.addEventListener('resize', () => {
 // Check Session Health
 async function checkSessionHealth() {
   const sessionKey = await loadLocalData('userSessionId');
-  
-  if (!sessionKey) return; 
+
+  if (!sessionKey) return;
 
   try {
-    const response = await fetch('https://api.trace-app.net/api/verify-session', {
+    const response = await fetch(`${API_BASE_URL}/api/verify-session`, {
       headers: {
         'Authorization': `Bearer ${sessionKey}`
       }

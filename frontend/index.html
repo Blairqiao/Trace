@@ -289,6 +289,44 @@
     </div>
   </div>
 
+  <div id="galaxy-info-pill" class="galaxy-info-pill hidden" aria-live="polite"> 
+    <div class="pill-tooltip">
+      <div class="pill-tooltip-header">Galaxy Telemetry</div>
+      <div class="pill-tooltip-row">
+        <span class="pill-dot dot-white"></span>
+        <span class="pill-tooltip-label">Nodes:</span>
+        <span class="pill-tooltip-desc">Rendered history entries</span>
+      </div>
+      <div class="pill-tooltip-row">
+        <span class="pill-dot dot-teal"></span>
+        <span class="pill-tooltip-label">Clusters:</span>
+        <span class="pill-tooltip-desc">Distinct topic groupings</span>
+      </div>
+      <div class="pill-tooltip-row">
+        <span class="pill-dot dot-pink"></span>
+        <span class="pill-tooltip-label">Fidelity:</span>
+        <span class="pill-tooltip-desc">3D semantic accuracy score</span>
+      </div>
+    </div>
+    <div class="pill-stat pill-nodes">
+      <span class="pill-dot dot-white"></span>
+      <span class="pill-label">Nodes</span>
+      <span class="pill-value" id="pill-nodes-val">--</span>
+    </div>
+    <div class="pill-divider"></div>
+    <div class="pill-stat pill-clusters">
+      <span class="pill-dot dot-teal"></span>
+      <span class="pill-label">Clusters</span>
+      <span class="pill-value" id="pill-clusters-val">--</span>
+    </div>
+    <div class="pill-divider"></div>
+    <div class="pill-stat pill-fidelity">
+      <span class="pill-dot dot-pink"></span>
+      <span class="pill-label">Fidelity</span>
+      <span class="pill-value" id="pill-fidelity-val">--%</span>
+    </div>
+  </div>
+
   <script type="module" src="src/main.js"></script>
 </body>
 
