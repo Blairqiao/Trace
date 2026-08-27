@@ -105,14 +105,16 @@ export class GalaxyMesh {
     this.scene.add(this.pointCloud);
   }
 
-  updateColors(nodes = this.nodeData) {
-    if (!this.pointCloud) return;
+  updateColors(clusterNodes) {
+    if (!this.pointCloud || !this.nodeData || !clusterNodes) return;
 
-    this.nodeData = nodes;
     const colorsAttr = this.pointCloud.geometry.attributes.customColor;
     const colorObj = new THREE.Color();
 
-    this.nodeData.forEach((dataPoint, i) => {
+    clusterNodes.forEach((dataPoint, i) => {
+      if (this.nodeData[i]) {
+        this.nodeData[i].cluster = dataPoint.cluster;
+      }
       colorObj.setHex(getClusterColorHex(dataPoint.cluster));
       colorsAttr.setXYZ(i, colorObj.r, colorObj.g, colorObj.b);
     });
